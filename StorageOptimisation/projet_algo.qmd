@@ -85,3 +85,64 @@ algo <- function(mem, jeux){
 
 algo(mem, jeux)
 ```
+
+# Version 2
+
+```{r}
+memoire_exact <- function(jeux, taille_memoire) {
+  # Fonction pour générer toutes les permutations
+  generate_permutations <- function(elements) {
+    if (length(elements) <= 1) {
+      return(list(elements))
+    } else {
+      perms <- list()
+      for (i in 1:length(elements)) {
+        current_element <- elements[i]
+        remaining_elements <- elements[-i]
+        sub_perms <- generate_permutations(remaining_elements)
+        for (perm in sub_perms) {
+          perms <- c(perms, list(c(current_element, perm)))
+        }
+      }
+      return(perms)
+    }
+  }
+  
+  # Générer toutes les permutations possibles des jeux
+  permutations <- generate_permutations(jeux)
+  
+  memoire_minimale <- Inf  # Initialisation à une valeur infinie
+  
+  # Pour chaque permutation
+  for (permutation in permutations) {
+    memoires <- rep(taille_memoire, length(jeux))  # Initialise toutes les mémoires avec la même taille
+    nombre_memoires <- 0
+    
+    # Essayer de placer chaque jeu dans une mémoire
+    for (jeu in permutation) {
+      for (i in 1:length(memoires)) {
+        if (jeu <= memoires[i]) {
+          memoires[i] <- memoires[i] - jeu
+          break
+        }
+      }
+    }
+    
+    # Calculer le nombre de mémoires utilisées
+    nombre_memoires <- sum(taille_memoire - memoires > 0)
+    
+    # Mettre à jour le nombre minimal de mémoires nécessaires
+    memoire_minimale <- min(memoire_minimale, nombre_memoires)
+  }
+  
+  return(memoire_minimale)
+}
+```
+
+```{r}
+jeux <- sample(1:1000, size=10)
+taille_memoire <- 1000
+resultat_exact <- memoire_exact(jeux, taille_memoire)
+print(paste("Nombre minimal de mémoire nécessaire :", resultat_exact))
+
+```
