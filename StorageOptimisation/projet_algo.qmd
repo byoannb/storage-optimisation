@@ -46,8 +46,42 @@ storage_opti <- function(storages, games){
 ```
 
 ```{r}
-mem = sample(3000:20000, size=20, replace=FALSE)
-jeux = sample(1:3000, size=1000, replace=TRUE)
+mem = sample(1:5000, size=3, replace=FALSE)
+jeux = sample(1:100, size=10, replace=TRUE)
+```
 
-res = storage_opti(mem, jeux)
+```{r}
+algo <- function(mem, jeux){
+  p = length(mem)
+  n = length(jeux)
+  
+  max = 0
+  vect_max = c()
+  vect <- as.matrix(expand.grid(rep(list(0:p), n)))
+  mat = matrix(0, nrow = p, ncol = n)
+  
+  mem_count = matrix(0, ncol = p)
+  
+  for (j in 1:dim(vect)[1]){
+    for (i in 1:length(vect[j,])) {
+      if (vect[j,i] == 0){
+        next
+      }
+      else{
+        mat[vect[j,i], i] <- 1
+        mem_count[vect[j,i]] = mem_count[vect[j,i]] + jeux[i]
+      }
+    }
+    if (all(mem_count <= mem)){
+      if (sum(rowSums(mat)) > max){
+        vect_max = vect[j,]
+        max = sum(rowSums(mat))
+      }
+    }
+  }
+  
+  return(list(max=max, vect_max=vect_max))
+}
+
+algo(mem, jeux)
 ```
