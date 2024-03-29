@@ -1,0 +1,53 @@
+---
+title: "projet_algo"
+format: html
+editor: visual
+---
+
+```{r}
+mem = sample(100:1000, size=5, replace=TRUE)
+l = sample(1:100, size=25, replace=TRUE)
+jeux = sort(l, decreasing = TRUE)
+mem = sort(mem, decreasing = TRUE)
+
+mat = matrix(0, nrow = length(mem), ncol = length(jeux))
+
+print(jeux)
+cat('\n')
+print(mem)
+```
+
+```{r}
+storage_opti <- function(storages, games){
+  
+  games = sort(games, decreasing = TRUE)
+  storages = sort(storages, decreasing = TRUE)
+  
+  i_mem = 1
+  j_jeu = 1
+  mat = matrix(0, nrow = length(storages), ncol = length(games))
+  colnames(mat) = games
+  rownames(mat) = storages
+  
+  while(length(games) != 0 && i_mem <= length(storages) && j_jeu <= length(games)){
+    if (storages[i_mem] - games[j_jeu] >= 0){
+        storages[i_mem] = storages[i_mem] - games[j_jeu]
+        mat[i_mem, j_jeu] = 1
+        j_jeu = j_jeu + 1
+    }
+    else {
+      i_mem = i_mem + 1
+    }
+  }
+  cat(sum(rowSums(mat) != 0), "out of", length(storages), "storage facilities were used \n")
+  cat(sum(colSums(mat)), "out of", length(games), "games could be stored")
+  return(mat)
+}
+```
+
+```{r}
+mem = sample(3000:20000, size=20, replace=FALSE)
+jeux = sample(1:3000, size=1000, replace=TRUE)
+
+res = storage_opti(mem, jeux)
+```
