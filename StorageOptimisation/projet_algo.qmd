@@ -140,9 +140,24 @@ memoire_exact <- function(jeux, taille_memoire) {
 ```
 
 ```{r}
-jeux <- sample(1:1000, size=10)
+jeux <- sample(1:1000, size=9)
 taille_memoire <- 1000
 resultat_exact <- memoire_exact(jeux, taille_memoire)
 print(paste("Nombre minimal de mémoire nécessaire :", resultat_exact))
 
+```
+
+```{r}
+res = c()
+for (i in 1:9){
+  jeux <- sample(1:1000, size=i)
+  temps = system.time({memoire_exact(jeux, taille_memoire)})['elapsed']
+  res = c(res, temps)
+}
+
+res
+```
+
+```{r}
+plot(c(1:9), res)
 ```
