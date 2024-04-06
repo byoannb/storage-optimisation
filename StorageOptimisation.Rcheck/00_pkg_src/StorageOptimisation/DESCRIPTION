@@ -17,6 +17,11 @@ Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: GPL-3
 Encoding: UTF-8
-LazyData: true
 Imports: Rcpp (>= 1.0.11)
 LinkingTo: Rcpp
+NeedsCompilation: yes
+Packaged: 2024-04-06 09:32:52 UTC; hugop
+Author: Yoann Bonnet [aut],
+  Victorien Lecomte [aut],
+  Hugo Picard [aut, cre]
+Maintainer: Hugo Picard <hugo.picard@etud.univ-evry.fr>
