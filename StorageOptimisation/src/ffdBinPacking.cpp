@@ -2,16 +2,16 @@
 using namespace Rcpp; //to use the NumericVector object
 using namespace std;
 
+#include<vector> //to use std::vector<double>
 #include <iostream>
-#include <vector>
 #include <algorithm>
-#include <numeric> 
+#include <numeric>
 
 vector<vector<int>> ffd_bin_packing(vector<int>& items, int bin_size) {
     sort(items.begin(), items.end(), greater<int>());
-    
+
     vector<vector<int>> bins;
-    
+
     for (int item : items) {
         bool fitted = false;
         for (vector<int>& bin : bins) {
@@ -26,6 +26,6 @@ vector<vector<int>> ffd_bin_packing(vector<int>& items, int bin_size) {
             bins.push_back({item});
         }
     }
-    
+
     return bins;
 }
