@@ -2,7 +2,10 @@
 using namespace Rcpp; //to use the NumericVector object
 using namespace std;
 
-#include<vector> //to use std::vector<double>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <numeric> 
 
 vector<vector<int>> ffd_bin_packing(vector<int>& items, int bin_size) {
     sort(items.begin(), items.end(), greater<int>());
