@@ -10,15 +10,15 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// ffd_bin_packing
-std::vector<std::vector<int>> ffd_bin_packing(std::vector<int>& items, int bin_size);
-RcppExport SEXP _StorageOptimisation_ffd_bin_packing(SEXP itemsSEXP, SEXP bin_sizeSEXP) {
+// ffd_bin_packing_Rcpp
+std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& items, int bin_size);
+RcppExport SEXP _StorageOptimisation_ffd_bin_packing_Rcpp(SEXP itemsSEXP, SEXP bin_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::vector<int>& >::type items(itemsSEXP);
     Rcpp::traits::input_parameter< int >::type bin_size(bin_sizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(ffd_bin_packing(items, bin_size));
+    rcpp_result_gen = Rcpp::wrap(ffd_bin_packing_Rcpp(items, bin_size));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -36,7 +36,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_StorageOptimisation_ffd_bin_packing", (DL_FUNC) &_StorageOptimisation_ffd_bin_packing, 2},
+    {"_StorageOptimisation_ffd_bin_packing_Rcpp", (DL_FUNC) &_StorageOptimisation_ffd_bin_packing_Rcpp, 2},
     {"_StorageOptimisation_naive_storage_Rcpp", (DL_FUNC) &_StorageOptimisation_naive_storage_Rcpp, 2},
     {NULL, NULL, 0}
 };
