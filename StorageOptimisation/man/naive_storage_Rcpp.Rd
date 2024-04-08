@@ -8,6 +8,8 @@ naive_storage_Rcpp(j, mem)
 }
 \arguments{
 \item{j}{an unsorted vector of numeric data}
+
+\item{mem}{an integer corresponding to the memory size}
 }
 \value{
 a sorted vector

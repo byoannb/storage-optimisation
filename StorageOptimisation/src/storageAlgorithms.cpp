@@ -34,7 +34,7 @@ vector<vector<int>> generate_permutations(vector<int> elements) {
 //' Insertion sort algorithm using C++
 //'
 //' @param j an unsorted vector of numeric data
-//' @param mem
+//' @param mem an integer corresponding to the memory size
 //' @return a sorted vector
 //' @export
 // [[Rcpp::export]] //mandatory to export the function
