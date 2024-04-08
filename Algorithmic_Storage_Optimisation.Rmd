@@ -11,7 +11,5 @@ rm(list=ls())
 graphics.off()
 ```
 
-```{r libraries}
-library(microbenchmark)
-library(ggplot2)
-```
+# Comparaison des temps d'exécution
+
