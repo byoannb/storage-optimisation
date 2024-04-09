@@ -1,0 +1,154 @@
+---
+title: "bin_packing"
+format: html
+editor: visual
+---
+
+## Bin packing
+
+```{r}
+
+# Charger la bibliothèque lpSolve
+library(lpSolve)
+
+# Fonction pour résoudre le problème auxiliaire
+solve_aux_prob <- function(dual_demand_satisfaction, bin_capacity, item_sizes) {
+  n <- length(dual_demand_satisfaction)
+  
+  # Définir la constante matrix
+  const_matrix <- matrix(item_sizes, nrow = 1, byrow = TRUE)
+  
+  # Résoudre le problème auxiliaire
+  result_model <- lp(direction = "max",
+                     objective.in = dual_demand_satisfaction,
+                     const.mat = const_matrix,
+                     const.dir = "<=",
+                     const.rhs = bin_capacity,
+                     all.bin = TRUE,
+                      )
+  
+  # Afficher la solution du problème auxiliaire
+  print("Solution auxiliary problem:")
+  print(result_model$solution)
+  
+  return(result_model)
+}
+
+create_matrix <- function(col_indices) {
+  unique_cols <- unique(col_indices)
+  num_rows <- length(col_indices)
+  num_cols <- length(unique_cols)
+  result_matrix <- matrix(0, nrow = num_rows, ncol = num_cols)
+  
+  for (i in 1:num_rows) {
+    col_index <- match(col_indices[i], unique_cols)
+    result_matrix[i, col_index] <- 1
+  }
+  
+  return(result_matrix)
+}
+
+# Fonction pour résoudre le problème de bin packing
+ex_bin_packing <- function(item_sizes, bin_capacity) {
+  n <- length(item_sizes)
+  
+  # Initialiser les patterns de maniere naive
+  patterns <- matrix(0, nrow = n, ncol = n)
+  for (i in 1:n) {
+    patterns[i, i] <- min(floor(bin_capacity / item_sizes[i]), 1)
+  }
+  
+  #x<-bin_pack_ffd(item_sizes, bin_capacity) #Initailisation judicieuse
+  
+  #patterns<- create_matrix(x)
+  
+  print(patterns)
+  
+  max_gen_cols <- 1000
+  ncols <- n
+  
+  while (ncols - n <= max_gen_cols) {
+    # Résoudre le RMP
+    print(ncols)
+    result_rmp <- lp(direction = "min",
+                     objective.in = rep(1, ncols),
+                     const.mat = as.matrix(patterns),
+                     const.dir = ">=",
+                     const.rhs = rep(1, n),
+                     all.int = FALSE,
+                     compute.sens = TRUE)
+    
+    if (is.null(result_rmp$solution)) {
+      break
+    }
+    
+    print(result_rmp)
+    
+    print("Duals:")
+    dual <- result_rmp$duals
+    dual <- dual[1:n]
+    print(dual)
+    
+    # Résoudre le problème auxiliaire
+    new_pattern <- solve_aux_prob(dual, bin_capacity, item_sizes)
+    net_cost <- new_pattern$objval
+    RC <- 1 - net_cost
+    
+    # Stopping criteria: RC >= 0
+    if (RC < 0) {
+      ncols <- ncols + 1
+      patterns <- cbind(patterns, new_pattern$solution)
+      print("Pas de stopping criteria, RC= ")
+      print(RC)
+      print(new_pattern$solution)
+    }
+    
+    if (RC >= 0) {
+      print("Il y a un stopping criteria, RC= ")
+      print(RC)
+      
+      # Afficher les résultats
+      cat("\nRESULTS OF THE PROBLEM AND COMPLEMENTARY INFORMATION:\n\n")
+      
+      lambda_opt <- result_rmp$solution
+      
+      bins_used <- 0
+      for (j in 1:ncols) {
+        if (upper_bound(lambda_opt[j]) != 0) {
+          bins_used <- bins_used + upper_bound(lambda_opt[j])
+          cat("Used", upper_bound(lambda_opt[j]), "bin(s) with the pattern number", j, "\n")
+        }
+      }
+      cat("\n")
+      
+      for (j in 1:ncols) {
+        if (upper_bound(lambda_opt[j]) != 0) {
+          cat("Pattern number", j, ":")
+          for (i in 1:n) {
+            if (patterns[i, j] != 0) {
+              cat(patterns[i, j], "item(s) of size", item_sizes[i], ", ")
+            }
+          }
+          cat("\n")
+        }
+      }
+      
+      cat("\n")
+      cat(bins_used, "bins will be used\n\n")
+      
+      break
+    }
+  }
+}
+
+# Appeler la fonction ex_bin_packing avec les tailles d'articles et la capacité du bac
+
+ex_bin_packing(c(45,12,68,23,50,32),100)
+ex_bin_packing(c(10, 17, 20, 19,12,13,11,4,5,6,7,8,12,34), 100) 
+```
+
+L'initialisation des patterns ici est naive, mais si on utilise par exemple le first fit decrease, cela va nous donner des pattern deja plus complexes et il y aura juste à optimiser dessus. En revanche, ici ca ne marche pas
+
+Il nous donne aussi des fois des patterns pas judicieux, car on retrouve dans 2 patterns differement le meme jeu.
+
+Il doit manquer des conditions que ne retrouve pas...
