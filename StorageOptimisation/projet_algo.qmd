@@ -170,26 +170,6 @@ borne_inf <- function(jeux, m) {
   return(ceiling(sum(jeux) / m))
 }
 
-# Fonction pour appliquer la stratégie First-Fit Decreasing (FFD)
-ffd <- function(jeux, m) {
-  n <- length(jeux)
-  stockages <- numeric(n)
-  num_stockages <- 0
-  for (i in 1:n) {
-    for (j in 1:num_stockages) {
-      if (jeux[i] + stockages[j] <= m) {
-        stockages[j] <- stockages[j] + jeux[i]
-        break
-      }
-    }
-    if (j > num_stockages) {
-      num_stockages <- num_stockages + 1
-      stockages[num_stockages] <- jeux[i]
-    }
-  }
-  return(num_stockages)
-}
-
 # Fonction pour appliquer la stratégie Best-Fit Decreasing (BFD)
 # Fonction pour appliquer la stratégie Best-Fit Decreasing (BFD)
 bfd <- function(jeux, m) {
@@ -229,10 +209,6 @@ branch_and_bound <- function(jeux, m) {
   if (bfd_sol < best_sol) {
     best_sol <- bfd_sol
   }
-  # wfd_sol <- wfd(jeux, m)
-  # if (wfd_sol < best_sol) {
-  #   best_sol <- wfd_sol
-  # }
   stack <- list()
   stack[[1]] <- list(level = 0, items = jeux, bins = numeric(n), num_bins = 0, bound = borne_inf(jeux, m))
   while (length(stack) > 0) {
@@ -276,8 +252,8 @@ branch_and_bound <- function(jeux, m) {
 
 
 ```{r}
-jeux <- sample(1:100, size=7)
-taille_memoire <- 100
+jeux <- sample(1:1000, size=1000)
+taille_memoire <- 1000
 result <- branch_and_bound(jeux, taille_memoire)
 print(result)
 
@@ -288,4 +264,18 @@ print(resultat_exact)
 ```
 
 
+```{r}
+res = c()
+for(i in seq(1, 5000, 500)){
+  jeux <- sample(1:1000, size=i, replace = TRUE)
+  temps = system.time({branch_and_bound(jeux, taille_memoire)})['elapsed']
+  res = c(res, temps)
+}
+```
+
+
+```{r}
+plot(seq(1, 5000, 500), res, main="Temps d'éxécution pour la fonction naive_storage_Rcpp", col = "blue", pch = 19, cex = .6)
+
+```
 
