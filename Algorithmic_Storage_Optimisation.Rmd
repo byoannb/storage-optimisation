@@ -47,28 +47,48 @@ ffd_bin_packing <- function(games, storage) {
 }
 ```
 
+Nous pouvons tester cet algorithme sur plusieurs simulations :
+
+```{r}
+games <- sample(1:50, 10, replace = TRUE)
+storage <- 100
+
+bins <- ffd_bin_packing(games, storage)
+
+cat("Jeux à stocker:", games, "\n")
+cat("Capacité de stockage de chaque mémoire:", storage, "\n\n")
+cat("Répartition des jeux dans les espaces mémoire:\n")
+for (i in seq_along(bins)) {
+  cat("Mémoire", i, ":", bins[[i]], "\n")
+}
+```
 ## Explication de l'algorithme
 
-* **Première étape.** L'algorithme FFD trie d'abord les objets par ordre décroissant de taille, puis il place chaque objet dans le premier bac qui a suffisamment d'espace pour l'accueillir, d'où le terme _First-Fit_. 
+* La première étape, utilisant la fonction `sort()`, ligne trie les jeux par ordre décroissant de taille. Ainsi, les jeux les plus grands seront placés en premier dans les bacs. Cette étape améliore l'efficacité de l'algorithme en réduisant le nombre de mémoires nécessaires.
 
-* **Deuxième étape.** Pour chaque jeu trié, l'algorithme parcourt les bacs existants pour voir s'il peut être placé dans l'un d'entre eux sans dépasser la capacité maximale. S'il trouve un bac où le jeu peut être placé, il l'ajoute à ce bac. Sinon, il crée un nouveau bac contenant uniquement ce jeu.
+* On initialise ensuite une liste vide qui sera utilisée pour stocker les différentes mémoires. Chaque élément de la liste représentera un espace mémoire, et la somme des jeux dans chaque mémoire ne dépassera pas la capacité de stockag totale de la mémoire.
 
-* **Troisième étape.** L'algorithme retourne une liste de bacs, où chaque bac contient les jeux qui y ont été placés.
+* Par la suite, on itère sur chacun des jeux dans la liste triée. L'objectif est de trouver un espace mémoire où le jeu peut être placé. Pour cela, on itère une deuxième fois, cette fois-ci sur la liste des espaces mémoire : pour chaque mémoire, l'algorithme vérifie sur le jeu sélectionné peut être placé dans ce bac, sans dépasser la capacité de stockage. Pour cela, on vérifie si la somme des tailles des jeux déjà dans le bac courant additionné à la taille du jeu courant est inférieure ou égale à la capacité de stockage : si tel est le cas, le jeu courant peut être placé dans cet espace mémoire.
+
+* Une fois que le jeu a été placé dans un espace mémoire, on met à jour la variable `fitted` en lui attribuant la valeur `TRUE` pour indiquer que le jeu courant a trouvé son espace mémoire. Puis, on sort de la boucle sur les espaces mémoire avec l'instruction `break`.
+
+* Enfin, nous vérifions si le jeu courant n'a pas été placé dans un espace mémoire existant. Si tel est le cas, nous créons un nouveau espace pour y placer le jeu courant, avec l'instruction `bins <- c(bins, list(game))`.
 
 ### Analyse de la complexité
 
-La complexité de l'algorithme de bin packing dépend de plusieurs facteurs :
+La complexité de notre algorithme dépend de plusieurs facteurs :
 
-* La phase de tri des jeux peut être réalisé en $\text{O}(n\log(n))$ dans le pire des cas, où $n$ est le nombre de jeux.
+* Dans un premier temps, le tri des jeux, avec `sort()`, a une complexité temporelle de $\text{O}(n\log(n))$ dans le pire des cas, car c'est la complexité du tri en général.
 
-* Pour chaque jeu, l'algorithme parcourt les bacs existants, ce qui peut prendre jusqu'à $\text{O}(m)$ où $m$ est le nombre de bacs déjà créés. Dans le pire des cas, chaque jeu doit être placé dans un nouveau bac, ce qui donne une complexité en $\text{O}(n^2)$.
+* L'initialisation de la liste des bacs, avec `bins <- list()`, est une opération constante, donc sa complexité est $\text{O}(1)$.
 
-* Enfin, retourner la liste des bacs a une complexité linéaire par rapport au nombre total de jeux, donc $\text{O}(n)$.
+* La boucle `for (game in sorted_games)` itère sur chaque jeu, donc elle a une complexité de $\text{O}(n)$. Cependant, pour chaque jeu, nous avons une autre boucle qui itère sur les espaces mémoire. La boucle `for (i in seq_along(bins))` itère sur chaque espace mémoire. Dans le pire des cas, chaque jeu est placé dans une mémoire différente, donc il y a autant de mémoires que de jeux. Cela signifie que cette boucle a aussi une complexité de $\text{O}(n)$. Comme cette boucle est à l'intérieur de la boucle sur les jeux, la complexité totale de ces deux boucles imbriquées est $\text{O}(n^2)$.
 
-Ainsi, on peut combiner ces éléments est dire que la complexité totale de cet algorithme est 
+* Les opérations à l'intérieur de la boucle sur les espaces mémoire sont toutes des opérations constantes, donc ayant une complexité en $\text{O}(1)$. Cependant, étant à l'intérieur de la boucle sur les espaces mémoire, elles ont une complexité totale en $\text{O}(n)$.
 
+* Enfin, l'opération `bins <- c(bins, list(game))` est à l'intérieur de la boucle sur les jeux, elle a donc une complexité totale en $\text{O}(n)$. En retournant la liste des mémoires utilisées avec `return`, on réalise une opération constante.
 
-En combinant ces éléments, on peut dire que la complexité totale de cet algorithme est $\text{O}(n\log n + n^2 + m)$. La contribution dominante est $\text{O}(n^2)$. Donc, la complexité de cet algorithme peut être approximativement considérée comme **quadratique**.
+**Ainsi, en combinant toutes ces complexités, on obtient une complexité totale pour l'algorithme en $\text{O}(n^2)$.**
 
 ### Vérification de la complexité sur des exemples
 
@@ -76,8 +96,9 @@ En combinant ces éléments, on peut dire que la complexité totale de cet algor
 measure_execution_time <- function(sizes, storage) {
   execution_times <- numeric(length(sizes))
   for (i in seq_along(sizes)) {
-    games <- runif(sizes[i], min = 1, max = 100)  # Génère des jeux de taille aléatoire
-    execution_times[i] <- median(microbenchmark::microbenchmark(ffd_bin_packing(games, storage), times = 10)$time)
+    games <- runif(sizes[i], min = 1, max = 100)  
+    execution_times[i] <- median(microbenchmark(ffd_bin_packing(games, storage), 
+                                                times = 10)$time)
   }
   return(data.frame(Size = sizes, ExecutionTime = execution_times))
 }
@@ -135,12 +156,6 @@ std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& items, int 
     return bins;
 }
 ```
-
-La complexité temporelle de l'étape de tri est de $\text{O}(n \log n)$ car le tri d'une liste de $n$ éléments à l'aide d'un algorithme de tri basé sur la comparaison prend $\text{O}(n \log n)$ de temps dans le pire des cas. Le tri est nécessaire pour garantir que les éléments sont considérés par ordre décroissant de taille, ce qui est important pour que l'heuristique FFD fonctionne efficacement.
-
-La complexité temporelle de l'étape 2, qui consiste à parcourir les éléments triés et à placer chacun d'entre eux dans la première case qui peut l'accueillir, est de $\text{O}(n)$ car l'algorithme parcourt les éléments une fois et effectue une quantité de travail constante pour chaque élément. Plus précisément, pour chaque élément, l'algorithme recherche la première case qui peut lui convenir, ce qui prend $\text{O}(1)$ de temps si la case est trouvée. Toutefois, dans le pire des cas, si toutes les cases sont presque pleines et que l'élément en cours est très petit, la recherche peut prendre $\text{O}(n)$ de temps parce que l'algorithme peut avoir besoin de vérifier toutes les cases.
-
-Par conséquent, la complexité temporelle globale de l'heuristique FFD est de $\text{O}(n \log n) + \text{O}(n) = \text{O}(n \log n)$.
 
 ### Vérification de la complexité sur des exemples
 
