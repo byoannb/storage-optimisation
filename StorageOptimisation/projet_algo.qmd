@@ -222,7 +222,6 @@ memoire_exact <- function(jeux, taille_memoire) {
 
 ```
 
-
 ```{r}
 jeux <- sample(1:1000, size=4)
 taille_memoire <- 1000
@@ -382,7 +381,6 @@ branch_and_bound <- function(jeux, m) {
 
 ```
 
-
 ```{r}
 branch_and_bound <- function(jeux, m) {
   n <- length(jeux)
@@ -480,7 +478,6 @@ resultat_exact <- naive_storage_opti(jeux, taille_memoire)
 print(resultat_exact$memoire_minimale)
 ```
 
-
 ```{r}
 res = c()
 for(i in seq(1, 5000, 500)){
@@ -490,9 +487,7 @@ for(i in seq(1, 5000, 500)){
 }
 ```
 
-
 ```{r}
 plot(seq(1, 5000, 500), res, main="Temps d'éxécution pour la fonction naive_storage_Rcpp", col = "blue", pch = 19, cex = .6)
 
 ```
-

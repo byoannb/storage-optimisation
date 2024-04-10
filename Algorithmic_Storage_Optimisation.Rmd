@@ -1,7 +1,8 @@
 ---
-title: "**Algorithme d'optimisation de stockage**"
+title: "**Algorithme d'optimisation de rangement de jeux dans des espaces mémoire**"
 author: "Yoann Bonnet, Victorien Leconte, Hugo Picard"
 date: "M2 Data Science, 2023 - 2024"
+geometry: "left=1.5cm,right=1.5cm,top=1.5cm,bottom=2cm"
 output: pdf_document
 ---
 
@@ -11,17 +12,42 @@ rm(list=ls())
 graphics.off()
 ```
 
-```{r}
+```{r echo=FALSE}
 library(Rcpp)
 library(ggplot2)
+library(gridExtra)
 library(microbenchmark)
 ```
 
+# Introduction au problème
+
+Le problème du Bin Packing est un **défi classique de l'optimisation combinatoire** qui consiste à **placer des objets de différentes tailles dans un nombre minimal de conteneurs de capacité fixe**. Cette tâche, qui semble simple au premier abord, présente des implications profondes dans divers domaines, et est classé parmi les problèmes NP-complets.
+
+Une application pratique importante du problème du Bin Packing se trouve dans le domaine du stockage de données, qui peuvent être des fichiers de n'importe quel type, notamment dans le contexte des cartes mémoires. Dans ce scénario, les données doivent être stockées de manière efficace sur des dispositifs de stockage à capacité limitée, tels que des cartes mémoires. Le défi consiste à organiser ces données de manière à minimiser l'utilisation de l'espace de stockage tout en garantissant un accès rapide et efficace aux données. Dans notre cas, nous traiterons l'optimisation du rangement de jeux vidéos dans des carte mémoire.
+
+Notons $n$ le nombre de jeux à ranger, $M$ la taille des cartes mémoire à notre disposition, $g_i$ la taille mémoire du jeu $i$ à ranger $(i=1,\dots,n)$, $x_{i,j}$ une variable binaire valant $1$ si le jeu $i$ est ajouté à la carte mémoire $j$, sinon $0$, et $y_j$ une variable binaire valant $1$ si la carte mémoire est utilisée, et $0$ sinon.
+
+Le problème se modélise mathématiquement de la façon suivante :
+
+\[
+\text{Minimiser}~z = \sum_{j} y_j
+\]
+
+
+\textit{Sous contraintes :}
+\begin{itemize}
+    \item Chaque jeu doit être placé dans exactement une carte mémoire : $\displaystyle\sum_{j} x_{ij} = 1 \quad \forall i \in( {1,...,n})$
+    
+    \item La capacité des cartes mémoire ne doit pas être dépassée : $\displaystyle\sum_{i} g_i \cdot x_{ij} \leq M \quad \forall j$
+\end{itemize}
+
+Pour résoudre ce problème, nous utiliserons trois approches différentes, développées dans la suite, chacune implémentées à l'aide des langages `R` et `C++`.
+
 # Algorithme _First-fit-decreasing bin packing_
 
-L'algorithme **First-Fit Decreasing Bin Packing (FFD)** est une méthode d'optimisation utilisée en informatique et en recherche opérationnelle pour résoudre le problème de **bin packing**. Ce problème classique consiste à répartir un ensemble d'objets de tailles différentes, ici, il s'agit de jeux, dans le plus petit nombre possible de bacs de capacité fixe, ici espaces mémoires, par exemple, d'une console de jeux. 
+L'algorithme **First-Fit Decreasing Bin Packing (FFD)** est une méthode heuristique d'optimisation utilisée en informatique et en recherche opérationnelle pour résoudre le problème de **bin packing**. S'agissant de techniques heuristiques, nous ne pouvons pas être certains que la solution obtenue sera une solution optimale ; cependant, elle devra s'en rapprocher avec des délais raisonnables.
 
-## Implémentation de l'algorithme à l'aide du langage `R`
+## Implémentations en `R` et en `C++`
 
 ```{r}
 ffd_bin_packing <- function(games, storage) {
@@ -47,80 +73,6 @@ ffd_bin_packing <- function(games, storage) {
 }
 ```
 
-Nous pouvons tester cet algorithme sur plusieurs simulations :
-
-```{r}
-games <- sample(1:50, 10, replace = TRUE)
-storage <- 100
-
-bins <- ffd_bin_packing(games, storage)
-
-cat("Jeux à stocker:", games, "\n")
-cat("Capacité de stockage de chaque mémoire:", storage, "\n\n")
-cat("Répartition des jeux dans les espaces mémoire:\n")
-for (i in seq_along(bins)) {
-  cat("Mémoire", i, ":", bins[[i]], "\n")
-}
-```
-## Explication de l'algorithme
-
-* La première étape, utilisant la fonction `sort()`, ligne trie les jeux par ordre décroissant de taille. Ainsi, les jeux les plus grands seront placés en premier dans les bacs. Cette étape améliore l'efficacité de l'algorithme en réduisant le nombre de mémoires nécessaires.
-
-* On initialise ensuite une liste vide qui sera utilisée pour stocker les différentes mémoires. Chaque élément de la liste représentera un espace mémoire, et la somme des jeux dans chaque mémoire ne dépassera pas la capacité de stockag totale de la mémoire.
-
-* Par la suite, on itère sur chacun des jeux dans la liste triée. L'objectif est de trouver un espace mémoire où le jeu peut être placé. Pour cela, on itère une deuxième fois, cette fois-ci sur la liste des espaces mémoire : pour chaque mémoire, l'algorithme vérifie sur le jeu sélectionné peut être placé dans ce bac, sans dépasser la capacité de stockage. Pour cela, on vérifie si la somme des tailles des jeux déjà dans le bac courant additionné à la taille du jeu courant est inférieure ou égale à la capacité de stockage : si tel est le cas, le jeu courant peut être placé dans cet espace mémoire.
-
-* Une fois que le jeu a été placé dans un espace mémoire, on met à jour la variable `fitted` en lui attribuant la valeur `TRUE` pour indiquer que le jeu courant a trouvé son espace mémoire. Puis, on sort de la boucle sur les espaces mémoire avec l'instruction `break`.
-
-* Enfin, nous vérifions si le jeu courant n'a pas été placé dans un espace mémoire existant. Si tel est le cas, nous créons un nouveau espace pour y placer le jeu courant, avec l'instruction `bins <- c(bins, list(game))`.
-
-### Analyse de la complexité
-
-La complexité de notre algorithme dépend de plusieurs facteurs :
-
-* Dans un premier temps, le tri des jeux, avec `sort()`, a une complexité temporelle de $\text{O}(n\log(n))$ dans le pire des cas, car c'est la complexité du tri en général.
-
-* L'initialisation de la liste des bacs, avec `bins <- list()`, est une opération constante, donc sa complexité est $\text{O}(1)$.
-
-* La boucle `for (game in sorted_games)` itère sur chaque jeu, donc elle a une complexité de $\text{O}(n)$. Cependant, pour chaque jeu, nous avons une autre boucle qui itère sur les espaces mémoire. La boucle `for (i in seq_along(bins))` itère sur chaque espace mémoire. Dans le pire des cas, chaque jeu est placé dans une mémoire différente, donc il y a autant de mémoires que de jeux. Cela signifie que cette boucle a aussi une complexité de $\text{O}(n)$. Comme cette boucle est à l'intérieur de la boucle sur les jeux, la complexité totale de ces deux boucles imbriquées est $\text{O}(n^2)$.
-
-* Les opérations à l'intérieur de la boucle sur les espaces mémoire sont toutes des opérations constantes, donc ayant une complexité en $\text{O}(1)$. Cependant, étant à l'intérieur de la boucle sur les espaces mémoire, elles ont une complexité totale en $\text{O}(n)$.
-
-* Enfin, l'opération `bins <- c(bins, list(game))` est à l'intérieur de la boucle sur les jeux, elle a donc une complexité totale en $\text{O}(n)$. En retournant la liste des mémoires utilisées avec `return`, on réalise une opération constante.
-
-**Ainsi, en combinant toutes ces complexités, on obtient une complexité totale pour l'algorithme en $\text{O}(n^2)$.**
-
-### Vérification de la complexité sur des exemples
-
-```{r}
-measure_execution_time <- function(sizes, storage) {
-  execution_times <- numeric(length(sizes))
-  for (i in seq_along(sizes)) {
-    games <- runif(sizes[i], min = 1, max = 100)  
-    execution_times[i] <- median(microbenchmark(ffd_bin_packing(games, storage), 
-                                                times = 10)$time)
-  }
-  return(data.frame(Size = sizes, ExecutionTime = execution_times))
-}
-
-sizes <- seq(10, 1000, by = 10)
-
-storage <- 1000
-
-execution_data <- measure_execution_time(sizes, storage)
-
-ggplot(execution_data, aes(x = Size, y = ExecutionTime)) +
-  geom_line() +
-  geom_point() +
-  labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
-       title = "Complexité de l'algorithme de bin packing") +
-  theme_minimal()
-```
-
-On reconnaît aisément une fonction sensiblement proche de la fonction $n \mapsto n^2$.
-
-## Implémentation de l'algorithme à l'aide du langage `C++`
-
 ```{Rcpp}
 #include <Rcpp.h> 
 using namespace Rcpp; 
@@ -132,24 +84,24 @@ using namespace std;
 #include <numeric>
 
 // [[Rcpp::export]] 
-std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& items, int bin_size)
+std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& games, int storage)
   {
-    sort(items.begin(), items.end(), greater<int>());
+    sort(games.begin(), games.end(), greater<int>());
 
     vector<vector<int>> bins;
 
-    for (int item : items) {
+    for (int game : games) {
         bool fitted = false;
         for (vector<int>& bin : bins) {
-            if (accumulate(bin.begin(), bin.end(), 0) + item <= bin_size) {
-                bin.push_back(item);
+            if (accumulate(bin.begin(), bin.end(), 0) + game <= storage) {
+                bin.push_back(game);
                 fitted = true;
                 break;
             }
         }
 
         if (!fitted) {
-            bins.push_back({item});
+            bins.push_back({game});
         }
     }
 
@@ -157,64 +109,423 @@ std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& items, int 
 }
 ```
 
-### Vérification de la complexité sur des exemples
+Nous pouvons tester ces deux algorithmes sur plusieurs simulations, ce qui nous renvoie :
 
-```{r}
+```{r, echo=FALSE, out.width="50%",}
+games <- sample(1:50, 15, replace = TRUE)
+storage <- 100
+
+bins_R <- ffd_bin_packing(games, storage)
+bins_Cpp <- ffd_bin_packing_Rcpp(games, storage)
+
+cat("Jeux à stocker:", games, "\n")
+cat("Capacité de stockage de chaque mémoire:", storage, "\n\n")
+
+cat("Version R\n")
+for (i in seq_along(bins_R)) {
+  cat("Mémoire", i, ":", bins_R[[i]], "\n")
+}
+
+cat("\n\n")
+
+cat("Version C++\n")
+for (i in seq_along(bins_Cpp)) {
+  cat("Mémoire", i, ":", bins_Cpp[[i]], "\n")
+}
+```
+
+## Explication de l'algorithme
+
+* Dans un premier temps, nous trions les jeux par ordre décroissant de taille. Ainsi, les jeux les plus grands seront placés en premier dans les bac, ce qui améliore l'efficacité de l'algorithme en réduisant le nombre de mémoires nécessaires.
+
+* On initialise ensuite une liste vide qui sera utilisée pour stocker les différentes mémoires. Chaque élément de la liste représentera un espace mémoire, et la somme des jeux dans chaque mémoire ne dépassera pas la capacité de stockage totale de la mémoire.
+
+* Par la suite, on itère sur chacun des jeux dans la liste triée. L'objectif est de trouver un espace mémoire où le jeu peut être placé. Pour cela, on itère une deuxième fois, cette fois-ci sur la liste des espaces mémoire : pour chaque mémoire, l'algorithme vérifie sur le jeu sélectionné peut être placé dans ce bac, sans dépasser la capacité de stockage. Pour cela, on vérifie si la somme des tailles des jeux déjà dans le bac courant additionné à la taille du jeu courant est inférieure ou égale à la capacité de stockage : si tel est le cas, le jeu courant peut être placé dans cet espace mémoire.
+
+* Une fois que le jeu a été placé dans un espace mémoire, on met à jour la variable `fitted` en lui attribuant la valeur `TRUE` pour indiquer que le jeu courant a trouvé son espace mémoire. On sort de la boucle avec l'instruction `break`.
+
+* Enfin, si le jeu courant n'a pas été placé dans un espace mémoire existant, créons un nouveau espace pour y placer le jeu courant.
+
+## Analyse théorique de la complexité
+
+Les algorithmes `R` et `C++` fonctionnent sensiblement de la même manière, l'analyse de leur complexité est donc équivalente.
+
+* Dans un premier temps, le tri des jeux, avec `sort()` ou `std::sort()`, a une complexité temporelle de $\text{O}(n\log(n))$, dans le pire des cas, $n$ étant la taille du vecteur des jeux.
+
+* L'initialisation de la liste des bacs est une opération constante, donc en $\text{O}(1)$.
+
+* La boucle qui itère sur chaque jeu a une complexité de $\text{O}(n)$. Cependant, pour chaque jeu, nous avons une autre boucle qui itère sur les espaces mémoire. Dans le pire des cas, chaque jeu est placé dans une mémoire différente, donc il y a autant de mémoires que de jeux. Cela signifie que cette boucle a aussi une complexité de $\text{O}(n)$. Comme cette boucle est à l'intérieur de la boucle sur les jeux, la complexité totale de ces deux boucles imbriquées est $\text{O}(n^2)$.
+
+* Les opérations à l'intérieur de la boucle sur les espaces mémoire sont toutes des opérations constantes, donc ayant une complexité en $\text{O}(1)$. Cependant, étant à l'intérieur de la boucle sur les espaces mémoire, elles ont une complexité totale en $\text{O}(n)$.
+
+* Enfin, l'opération de création d'un nouvel espace mémoire dans le cas où cela est néccesaire est à l'intérieur de la boucle sur les jeux, elle a donc une complexité totale en $\text{O}(n)$.
+
+**Ainsi, en combinant toutes ces complexités, on obtient une complexité totale pour l'algorithme en $\text{O}(n^2)$.**
+
+## Vérification de la complexité sur des exemples
+
+```{r, echo = FALSE, out.width="50%", fig.align="center"}
+measure_execution_time_R <- function(sizes, storage) {
+  execution_times <- numeric(length(sizes))
+  for (i in seq_along(sizes)) {
+    games <- runif(sizes[i], min = 1, max = 100)  
+    execution_times[i] <- median(microbenchmark(ffd_bin_packing(games, storage), 
+                                                times = 10)$time)
+  }
+  return(data.frame(Size = sizes, ExecutionTime = execution_times, Language = "R"))
+}
+
 measure_execution_time_cpp <- function(sizes, storage) {
   execution_times <- numeric(length(sizes))
   for (i in seq_along(sizes)) {
-    games <- sample(1:100, sizes[i], replace = TRUE)  # Génère des jeux de taille aléatoire
-    execution_times[i] <- median(microbenchmark::microbenchmark(ffd_bin_packing_Rcpp(games, storage), times = 10)$time)
+    games <- sample(1:100, sizes[i], replace = TRUE)  
+    execution_times[i] <- median(microbenchmark(ffd_bin_packing_Rcpp(games, storage), 
+                                                times = 10)$time)
+  }
+  return(data.frame(Size = sizes, ExecutionTime = execution_times, Language = "C++"))
+}
+
+sizes <- seq(10, 1000, by = 10)
+storage <- 1000
+
+execution_data_R <- measure_execution_time_R(sizes, storage)
+execution_data_cpp <- measure_execution_time_cpp(sizes, storage)
+
+plot_R <- ggplot(execution_data_R, aes(x = Size, y = ExecutionTime)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
+       title = "Complexité (version R)") +
+  theme_minimal()
+
+plot_cpp <- ggplot(execution_data_cpp, aes(x = Size, y = ExecutionTime)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
+       title = "Complexité (version C++)") +
+  theme_minimal()
+
+grid.arrange(plot_R, plot_cpp, ncol = 2)
+```
+
+On reconnaît aisément une fonction sensiblement proche de la fonction $n \mapsto n^2$. Nous pouvons voir, en comparant les temps d'exécution, que l'algorithme `C++` est plus rapide que la fonction `R`.
+
+## Comparaison des temps d'exécution pour le _First-fit-decreasing bin packing_
+
+```{r, echo=FALSE, out.width="50%", fig.align="center"}
+source("StorageOptimisation/R/ffd_bin_packing.R")
+sourceCpp("StorageOptimisation/src/ffdBinPacking.cpp")
+
+sizes <- seq(10, 1000, by = 10)
+
+execution_times_R <- measure_execution_time_R(sizes, storage = 10)
+execution_times_Cpp <- measure_execution_time_cpp(sizes, storage = 10)
+
+ggplot() +
+  geom_point(data = execution_times_R, aes(x = log(Size), y = log(ExecutionTime), color = Language), shape = 1) +
+  geom_point(data = execution_times_Cpp, aes(x = log(Size), y = log(ExecutionTime), color = Language), shape = 1) +
+  labs(x = "log(n)", y = "log(T(n))", title = "Comparison des algorithmes R et C++") +
+  scale_color_manual(values = c("blue", "red"), name = "Language") +
+  theme_minimal()
+```
+
+Nous pouvons voir, comme attente, que la complexité temporelle des deux algorithmes évolue de la même manière, \emph{i.e.} de manière quadratique. Toutefois, l'algorithme `C++` est nettement plus rapide que sa version `R`, notamment pour les grandes valeurs de $n$.
+
+# Algorithme exact naïf
+
+Dans ce modèle, nous utiliserons une approche naïve énumérant toutes les combinaisons possibles afin de sélectionner la meilleure solution. Cette approche est garantie de trouver la solution optimale, mais elle peut être inefficace en termes de temps de calcul, surtout pour des instances de grande taille.
+
+## Implémentations en `R` et en `C++`
+
+```{r}
+naive_storage <- function(jeux, taille_memoire) {
+
+  generate_permutations <- function(elements) {
+    if (length(elements) <= 1) {
+      return(list(elements))
+    } else {
+      perms <- list()
+      for (i in 1:length(elements)) {
+        current_element <- elements[i]
+        remaining_elements <- elements[-i]
+        sub_perms <- generate_permutations(remaining_elements)
+        for (perm in sub_perms) {
+          perms <- c(perms, list(c(current_element, perm)))
+        }
+      }
+      return(perms)
+    }
+  }
+
+  permutations <- generate_permutations(jeux)
+  best_bins <- list()
+
+  memoire_minimale <- Inf  
+
+  for (permutation in permutations) {
+    bins <- list()
+    memoires <- rep(taille_memoire, length(jeux))
+    nombre_memoires <- 0
+
+    for (i in seq_along(permutation)) {
+      jeu <- permutation[i]
+      fitted <- FALSE
+      for (j in seq_along(bins)) {
+        if (sum(bins[[j]]) + jeu <= taille_memoire) {
+          bins[[j]] <- c(bins[[j]], jeu)
+          memoires[j] <- memoires[j] - jeu
+          fitted <- TRUE
+          break
+        }
+      }
+
+      if (!fitted) {
+        bins <- c(bins, list(jeu))
+        memoires <- c(memoires, taille_memoire - jeu)
+        nombre_memoires <- nombre_memoires + 1
+      }
+    }
+
+    nombre_memoires <- sum(taille_memoire - memoires > 0)
+
+    if (nombre_memoires < memoire_minimale){
+      memoire_minimale <- nombre_memoires
+      best_bins <- bins
+    }
+
+  }
+
+  jeux_dans_stockages <- list()
+  for (bin in best_bins) {
+    jeux_dans_stockages <- c(jeux_dans_stockages, list(bin))
+  }
+
+  return(list(memoire_minimale = memoire_minimale, jeux_dans_stockages = jeux_dans_stockages))
+}
+```
+
+```{Rcpp}
+#include <Rcpp.h> //to use the NumericVector object
+using namespace Rcpp; //to use the NumericVector object
+using namespace std;
+
+#include <vector>
+#include <algorithm>
+#include <numeric>
+#include <limits>
+#include <iterator>
+
+std::vector<std::vector<int>> generate_permutations(std::vector<int> elements) {
+  if (elements.size() <= 1) {
+    return {elements};
+  } else {
+    std::vector<std::vector<int>> perms;
+    for (int i = 0; i < elements.size(); i++) {
+      int current_element = elements[i];
+      vector<int> remaining_elements;
+      remaining_elements.reserve(elements.size() - 1);
+      for (int j = 0; j < elements.size(); j++) {
+        if (j != i) {
+          remaining_elements.push_back(elements[j]);
+        }
+      }
+      auto sub_perms = generate_permutations(remaining_elements);
+      for (auto perm : sub_perms) {
+        perm.insert(perm.begin(), current_element);
+        perms.push_back(perm);
+      }
+    }
+    return perms;
+  }
+}
+
+
+
+//' Insertion sort algorithm using C++
+//'
+//' @param j an unsorted vector of numeric data
+//' @param mem an integer corresponding to the memory size
+//' @return a sorted vector
+//' @export
+// [[Rcpp::export]] //mandatory to export the function
+std::vector<std::vector<int>> naive_storage_Rcpp(std::vector<int> j, int mem) {
+  std::vector<std::vector<int>> permutations = generate_permutations(j);
+
+  int memoire_minimale = numeric_limits<int>::max();
+  std::vector<std::vector<int>> best_bins;
+
+  for (const auto& permutation : permutations) {
+    std::vector<int> memoires(j.size(), mem); 
+    int nombre_memoires = 0;
+    std::vector<vector<int>> bins(j.size());
+
+    for (int i = 0; i < permutation.size(); i++) {
+      int jeu = permutation[i];
+      bool fitted = false;
+      for (int k = 0; k < bins.size(); k++) {
+        if (accumulate(bins[k].begin(), bins[k].end(), 0) + jeu <= mem) {
+          bins[k].push_back(jeu);
+          memoires[k] -= jeu;
+          fitted = true;
+          break;
+      }
+    }
+      if (!fitted) {
+        bins[nombre_memoires].push_back(jeu);
+        memoires[nombre_memoires] -= jeu;
+        nombre_memoires++;
+    }
+  }
+
+    nombre_memoires = count_if(memoires.begin(), memoires.end(), [mem](int m){ 
+      return m < mem; });
+
+    if (nombre_memoires < memoire_minimale) {
+      memoire_minimale = nombre_memoires;
+      best_bins = bins;
+    }
+  }
+
+  best_bins.erase(remove_if(best_bins.begin(), 
+                            best_bins.end(), 
+                            [](const vector<int>& v) { return v.empty(); }), 
+                            best_bins.end());
+
+  return best_bins;
+}
+```
+
+Nous pouvons tester ces deux algorithmes sur plusieurs simulations, ce qui nous renvoie :
+
+```{r, echo=FALSE}
+games <- sample(1:50, 8, replace = TRUE)
+storage <- 100
+
+naive_R <- naive_storage(games, storage)
+naive_Cpp <- naive_storage_Rcpp(games, storage)
+
+cat("Jeux à stocker:", games, "\n")
+cat("Capacité de stockage de chaque mémoire:", storage, "\n\n")
+
+cat("Version R\n")
+for (i in seq_along(naive_R$jeux_dans_stockages)) {
+  cat("Mémoire", i, ":", naive_R$jeux_dans_stockages[[i]], "\n")
+}
+
+cat("\n\n")
+
+cat("Version C++\n")
+for (i in seq_along(naive_Cpp)) {
+  cat("Mémoire", i, ":", naive_Cpp[[i]], "\n")
+}
+```
+
+## Explication de l'algorithme
+
+* Dans un premier temps, l'algorithme commence par générer toutes les permutations possibles des jeux donnés en entrée à l'aide d'une fonction récursive appelée `generate_permutations`.
+
+* Ensuite, pour chaque permutation générée, l'algorithme itère pour placer chaque jeu dans une carte mémoire. Il utilise une approche gloutonne en essayant de placer chaque jeu dans la première carte mémoire disponible qui a suffisamment d'espace. 
+
+* Une fois tous les jeux placés, l'algorithme calcule le nombre de cartes mémoire utilisées en comptant le nombre de cartes restantes avec de l'espace libre.
+
+* Pendant le processus, l'algorithme maintient une variable `memoire_minimale` qui stocke le nombre minimal de cartes mémoire nécessaires pour stocker tous les jeux. Cette variable est initialisée à l'infini et est mise à jour si le nouveau nombre de cartes mémoires à utilisé est plus faible que `memoire_minimale`, et cela pour chaque chaque itération sur la permutaion. On stocke également la répartition des jeux dans les cartes mémoires grace à une variable `best_placement` qui est mis à jour en meme temps que `memoire_minimale`. 
+
+* Enfin, l'algorithme retourne `memoire_minimale`, et `best_placement` représentant le nombre minimal de cartes mémoire nécessaires pour stocker tous les jeux, et la répartition de chaque jeux dans les cartes mémoires.
+
+## Analyse théorique de la complexité
+
+## Vérification de la complexité sur des exemples
+
+```{r, echo = FALSE, out.width="50%", fig.align="center"}
+naive_execution_time_R <- function(sizes, storage) {
+  execution_times <- numeric(length(sizes))
+  for (i in seq_along(sizes)) {
+    games <- runif(sizes[i], min = 1, max = 100)  
+    execution_times[i] <- median(microbenchmark(naive_storage(games, storage), 
+                                                times = 10)$time)
   }
   return(data.frame(Size = sizes, ExecutionTime = execution_times))
 }
 
-sizes <- seq(10, 1000, by = 10)
+naive_execution_time_cpp <- function(sizes, storage) {
+  execution_times <- numeric(length(sizes))
+  for (i in seq_along(sizes)) {
+    games <- runif(sizes[i], min = 1, max = 100)  
+    execution_times[i] <- median(microbenchmark(naive_storage_Rcpp(games, storage), 
+                                                times = 10)$time)
+  }
+  return(data.frame(Size = sizes, ExecutionTime = execution_times))
+}
 
-storage <- 1000
 
-execution_data_cpp <- measure_execution_time_cpp(sizes, storage)
+sizes <- seq(1, 7, by = 1)
+storage <- 100
 
-ggplot(execution_data_cpp, aes(x = Size, y = ExecutionTime)) +
+naive_execution_data_R <- naive_execution_time_R(sizes, storage)
+
+naive_execution_data_cpp <- naive_execution_time_cpp(sizes, storage)
+
+plot_R <- ggplot(naive_execution_data_R, aes(x = Size, y = ExecutionTime)) +
   geom_line() +
   geom_point() +
-  labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", title = "Complexité de l'algorithme de bin packing (C++)") +
+  labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
+       title = "Complexité (version R)") +
   theme_minimal()
+
+plot_cpp <- ggplot(naive_execution_data_cpp, aes(x = Size, y = ExecutionTime)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
+       title = "Complexité (version C++)") +
+  theme_minimal()
+
+grid.arrange(plot_R, plot_cpp, ncol = 2)
 ```
 
-## Comparaison des temps d'exécution
+Nous remarquons ici que, plus le nombre de jeux à ranger dans les cartes mémoires est grand, plus le temps augmente, et cela de manière **exponentielle**. En effet, à partir de 7 jeux à ranger, la complexité en temps explose, et il n'est plus possible d'obtenir un résultat dans un délai raisonnable en ayant 8 jeux ou plus à ranger. C'est la raison pour laquelle nous n'avons pas réalisé de graphiques pour une taille supérieure ou égale à 8.
 
-```{r}
-source("StorageOptimisation/R/ffd_bin_packing.R")
-sourceCpp("StorageOptimisation/src/ffdBinPacking.cpp")
+Nous voyons, toutefois, que le temps d'exécution est plus faible pour la version `C++`, ce qui confirme nos attentes.
 
-measure_time_R <- function(n) {
+## Comparaison des temps d'exécution pour l'algorithme naïf
+
+```{r, echo=FALSE, out.width="50%", fig.align="center"}
+source("StorageOptimisation/R/storage_opti.R")
+sourceCpp("StorageOptimisation/src/storageAlgorithms.cpp")
+
+naive_time_R <- function(n) {
   items <- sample(1:10, n, replace = TRUE)
   bin_size <- 10
-  microbenchmark(ffd_bin_packing(items, bin_size), times = 5)
+  x<-microbenchmark(naive_storage(items, bin_size), times = 5)
+  
+  return(mean(x$time))
 }
 
-measure_time_Cpp <- function(n) {
+naive_time_Cpp <- function(n) {
   items <- sample(1:10, n, replace = TRUE)  
   bin_size <- 10
-  microbenchmark(ffd_bin_packing_Rcpp(items, bin_size), times = 5)
+  x<-microbenchmark(naive_storage_Rcpp(items, bin_size), times = 5)
+  
+  return(mean(x$time))
 }
 
-sizes <- seq(10, 500, by = 10)
+sizes <- seq(1, 7, by = 1)
 
-times_R <- sapply(sizes, function(n) mean(measure_time_R(n)$time))
+naive_times_R <- sapply(sizes, naive_time_R)
+naive_times_Cpp <- sapply(sizes, naive_time_Cpp)
 
-times_Cpp <- sapply(sizes, function(n) mean(measure_time_Cpp(n)$time))
-```
-
-```{r}
 ggplot() +
-  geom_point(aes(x = log(sizes), y = log(times_R)), color = "blue", shape = 1) +
-  geom_point(aes(x = log(sizes), y = log(times_Cpp)), color = "red", shape = 1) +
-  labs(x = "log(n)", y = "log(T(n))", title = "Comparison of R vs C++ implementation") +
+  geom_point(aes(x = log(sizes), y = log(naive_times_R), 
+                 color = "Algorithme R"), 
+             shape = 1) +
+  geom_point(aes(x = log(sizes), y = log(naive_times_Cpp), 
+                 color = "Algorithme C++"), 
+             shape = 1) +
+  labs(x = "log(n)", y = "log(T(n))", 
+       title = "Comparison des algorithmes R et C++") +
+  scale_color_manual(values = c("blue", "red"), name = "Algorithme") +
   theme_minimal()
 ```
 
-# Algorithme naïf
+Nous pouvons voir que les deux versions des algorithmes sont assez semblables en termes de temps. Cependant, à taille égale, l'algorithme `R` est plus gourmand, ce qui était attendu.
 
 # Algorithme optimisé
