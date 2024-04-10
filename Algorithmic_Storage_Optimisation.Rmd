@@ -226,3 +226,7 @@ ggplot() +
 ```
 
 Nous pouvons voir, comme attente, que la complexité temporelle des deux algorithmes évolue de la même manière, \emph{i.e.} de manière quadratique. Toutefois, l'algorithme `C++` est nettement plus rapide que sa version `R`, notamment pour les grandes valeurs de $n$.
+
+# Algorithme naïf
+
+# Algorithme optimisé
