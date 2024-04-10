@@ -4,12 +4,12 @@
 \alias{naive_storage_opti}
 \title{naive storage optimisation algorithm}
 \usage{
-naive_storage_opti(storage, games)
+naive_storage_opti(jeux, taille_memoire)
 }
 \arguments{
-\item{storage}{a vector of storage facilities' sizes}
+\item{taille_memoire}{a vector of storage facilities' sizes}
 
-\item{games}{a vector of games' sizes}
+\item{jeux}{a vector of games' sizes}
 }
 \value{
 the matrix of storaged games
