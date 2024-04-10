@@ -14,23 +14,24 @@ using namespace std;
 //'         contains the sizes of items packed into a single bin.
 //' @export
 // [[Rcpp::export]] //mandatory to export the function
-std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& items, int bin_size) {
-    sort(items.begin(), items.end(), greater<int>());
+std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& games, int storage)
+  {
+    sort(games.begin(), games.end(), greater<int>());
 
     vector<vector<int>> bins;
 
-    for (int item : items) {
+    for (int game : games) {
         bool fitted = false;
         for (vector<int>& bin : bins) {
-            if (accumulate(bin.begin(), bin.end(), 0) + item <= bin_size) {
-                bin.push_back(item);
+            if (accumulate(bin.begin(), bin.end(), 0) + game <= storage) {
+                bin.push_back(game);
                 fitted = true;
                 break;
             }
         }
 
         if (!fitted) {
-            bins.push_back({item});
+            bins.push_back({game});
         }
     }
 

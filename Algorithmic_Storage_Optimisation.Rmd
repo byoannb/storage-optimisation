@@ -50,7 +50,7 @@ ffd_bin_packing <- function(games, storage) {
 Nous pouvons tester cet algorithme sur plusieurs simulations :
 
 ```{r}
-games <- sample(1:50, 10, replace = TRUE)
+games <- sample(1:50, 15, replace = TRUE)
 storage <- 100
 
 bins <- ffd_bin_packing(games, storage)
@@ -78,7 +78,7 @@ for (i in seq_along(bins)) {
 
 La complexité de notre algorithme dépend de plusieurs facteurs :
 
-* Dans un premier temps, le tri des jeux, avec `sort()`, a une complexité temporelle de $\text{O}(n\log(n))$ dans le pire des cas, car c'est la complexité du tri en général.
+* Dans un premier temps, le tri des jeux, avec `sort()`, a une complexité temporelle de $\text{O}(n\log(n))$, dans le pire des cas, car c'est la complexité du tri en général, $n$ étant la taille du vecteur des jeux.
 
 * L'initialisation de la liste des bacs, avec `bins <- list()`, est une opération constante, donc sa complexité est $\text{O}(1)$.
 
@@ -132,24 +132,24 @@ using namespace std;
 #include <numeric>
 
 // [[Rcpp::export]] 
-std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& items, int bin_size)
+std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& games, int storage)
   {
-    sort(items.begin(), items.end(), greater<int>());
+    sort(games.begin(), games.end(), greater<int>());
 
     vector<vector<int>> bins;
 
-    for (int item : items) {
+    for (int game : games) {
         bool fitted = false;
         for (vector<int>& bin : bins) {
-            if (accumulate(bin.begin(), bin.end(), 0) + item <= bin_size) {
-                bin.push_back(item);
+            if (accumulate(bin.begin(), bin.end(), 0) + game <= storage) {
+                bin.push_back(game);
                 fitted = true;
                 break;
             }
         }
 
         if (!fitted) {
-            bins.push_back({item});
+            bins.push_back({game});
         }
     }
 
@@ -157,14 +157,51 @@ std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& items, int 
 }
 ```
 
+Nous pouvons tester cet algorithme sur plusieurs simulations :
+
+```{r}
+games <- sample(1:50, 15, replace = TRUE)
+storage <- 100
+
+bins <- ffd_bin_packing_Rcpp(games, storage)
+
+cat("Jeux à stocker:", games, "\n")
+cat("Capacité de stockage de chaque mémoire:", storage, "\n\n")
+cat("Répartition des jeux dans les espaces mémoire:\n")
+for (i in seq_along(bins)) {
+  cat("Mémoire", i, ":", unlist(bins[[i]]), "\n")
+}
+```
+
+## Explication de l'algorithme
+
+Le fonctionnement de cet algorithme en `C++` est assez similaire au fonctionnement de la version `R`. La fonction prend en arguments un vecteur d'entiers `games`, représentant les tailles de chacun des jeux, et un entier `storage`, représentant la taille de chaque mémoire. La fonction renvoit un vecteur de vecteurs d'enteirs, représentant les jeux placés dans chaque mémoire.
+
+On trie les objets à l'aide de la fonction `sort(games.begin(), games.end(), greater<int>())`, puis on initialise un vecteur d'entiers pour stocker les objets placés dans chaque mémoire.
+
+On rentre, par la suite, dans deux boucles : tout d'abord, on itère sur chaque jeu, puis on créée une variable booléenne pour indiquer si le jeu courant a été placé dans un espace mémoire. Ensuite, on itère sur chacun des espaces mémoire.
+
+Une fois dans la deuxième boucle, on vérifie, à l'aide de la fonction `accumulate()`, si la somme des tailles des jeux déjà placés dans la mémoire courante additionnées à la taille du jeu courant, ne dépasse pas la taille de la mémoire. Si tel est le cas, le jeu courant est placé dans la mémoire courante et `fitted` est actualisé avec `TRUE`.
+
+Si le jeu courant n'a pas été placé dans une mémoire existante, un nouvel espace mémoire est créé et le jeu courant est placé dedans, à l'aide de la fonction `bins.push_back({game})`.
+
+### Analyse de la complexité
+
+De manière similaire à notre algorithme implémenté en `R`, l'algorithme tri, dans un premier temps, le vecteur des jeux à l'aide de la fonction `std::sort()`, qui a une complexité temporelle en $\text{O}(n\log(n))$, où $n$ est la taille du vecteur des jeux.
+
+Ensuite, pour chaque jeu dans le vecteur `games`, l'algorithme parcourt la liste de tous les espaces mémoire existant afin d'essayer de trouver un espace mémoire dans lequel le jeu courant peut être placé. Dans le pire des cas, cette opération a une complexité temporelle de $\text{O}(n)$, ce qui donne une complexité totale, pour les deux boucles imbriquées, en $\text{O}(n^2)$.
+
+On obtient, ainsi, une complexité totale pour cet algorithme en $\text{O}(n^2)$. 
+
 ### Vérification de la complexité sur des exemples
 
 ```{r}
 measure_execution_time_cpp <- function(sizes, storage) {
   execution_times <- numeric(length(sizes))
   for (i in seq_along(sizes)) {
-    games <- sample(1:100, sizes[i], replace = TRUE)  # Génère des jeux de taille aléatoire
-    execution_times[i] <- median(microbenchmark::microbenchmark(ffd_bin_packing_Rcpp(games, storage), times = 10)$time)
+    games <- sample(1:100, sizes[i], replace = TRUE)  
+    execution_times[i] <- median(microbenchmark(ffd_bin_packing_Rcpp(games, storage), 
+                                                times = 10)$time)
   }
   return(data.frame(Size = sizes, ExecutionTime = execution_times))
 }
@@ -178,11 +215,14 @@ execution_data_cpp <- measure_execution_time_cpp(sizes, storage)
 ggplot(execution_data_cpp, aes(x = Size, y = ExecutionTime)) +
   geom_line() +
   geom_point() +
-  labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", title = "Complexité de l'algorithme de bin packing (C++)") +
+  labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
+       title = "Complexité de l'algorithme de bin packing (C++)") +
   theme_minimal()
 ```
 
-## Comparaison des temps d'exécution
+Nous pouvons également voir un tracé sensiblement proche de la fonction $n \mapsto n^2$. Cependant, en comparant les deux graphiques, nous pouvons donc voir que cette fonction est plus rapide que la fonction `R`, ce que nous pouvons vérifier, ci-dessous, en comparant les temps d'exécution sur le même graphique.
+
+## Comparaison des temps d'exécution pour le _First-fit-decreasing bin packing_
 
 ```{r}
 source("StorageOptimisation/R/ffd_bin_packing.R")
@@ -200,7 +240,7 @@ measure_time_Cpp <- function(n) {
   microbenchmark(ffd_bin_packing_Rcpp(items, bin_size), times = 5)
 }
 
-sizes <- seq(10, 500, by = 10)
+sizes <- seq(10, 1000, by = 10)
 
 times_R <- sapply(sizes, function(n) mean(measure_time_R(n)$time))
 
@@ -209,11 +249,19 @@ times_Cpp <- sapply(sizes, function(n) mean(measure_time_Cpp(n)$time))
 
 ```{r}
 ggplot() +
-  geom_point(aes(x = log(sizes), y = log(times_R)), color = "blue", shape = 1) +
-  geom_point(aes(x = log(sizes), y = log(times_Cpp)), color = "red", shape = 1) +
-  labs(x = "log(n)", y = "log(T(n))", title = "Comparison of R vs C++ implementation") +
+  geom_point(aes(x = log(sizes), y = log(times_R), 
+                 color = "Algorithme R"), 
+             shape = 1) +
+  geom_point(aes(x = log(sizes), y = log(times_Cpp), 
+                 color = "Algorithme C++"), 
+             shape = 1) +
+  labs(x = "log(n)", y = "log(T(n))", 
+       title = "Comparison of R vs C++ implementation") +
+  scale_color_manual(values = c("blue", "red"), name = "Algorithme") +
   theme_minimal()
 ```
+
+Nous pouvons voir, comme attente, que la complexité temporelle des deux algorithmes évolue de la même manière, \emph{i.e.} de manière quadratique. Toutefois, l'algorithme `C++` est nettement plus rapide que sa version `R`, notamment pour les grandes valeurs de $n$.
 
 # Algorithme naïf
 
