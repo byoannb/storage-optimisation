@@ -1,0 +1,3 @@
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
+useDynLib(StorageOptimisation, .registration = TRUE)

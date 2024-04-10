@@ -11,81 +11,87 @@ using namespace std;
 #include <numeric>
 
 
-std::vector<std::vector<int>> generate_permutations(std::vector<int> elements) {
-  if (elements.size() <= 1) {
-    return {elements};
-  } else {
-    std::vector<std::vector<int>> perms;
-    for (int i = 0; i < elements.size(); i++) {
-      int current_element = elements[i];
-      vector<int> remaining_elements;
-      remaining_elements.reserve(elements.size() - 1);
-      for (int j = 0; j < elements.size(); j++) {
-        if (j != i) {
-          remaining_elements.push_back(elements[j]);
-        }
-      }
-      auto sub_perms = generate_permutations(remaining_elements);
-      for (auto perm : sub_perms) {
-        perm.insert(perm.begin(), current_element);
-        perms.push_back(perm);
-      }
-    }
-    return perms;
-  }
-}
+// std::vector<std::vector<int>> generate_permutations(std::vector<int> elements) {
+//   if (elements.size() <= 1) {
+//     return {elements};
+//   } else {
+//     std::vector<std::vector<int>> perms;
+//     for (int i = 0; i < elements.size(); i++) {
+//       int current_element = elements[i];
+//       vector<int> remaining_elements;
+//       remaining_elements.reserve(elements.size() - 1);
+//       for (int j = 0; j < elements.size(); j++) {
+//         if (j != i) {
+//           remaining_elements.push_back(elements[j]);
+//         }
+//       }
+//       auto sub_perms = generate_permutations(remaining_elements);
+//       for (auto perm : sub_perms) {
+//         perm.insert(perm.begin(), current_element);
+//         perms.push_back(perm);
+//       }
+//     }
+//     return perms;
+//   }
+// }
+//
+//
+//
+// //' Insertion sort algorithm using C++
+// //'
+// //' @param j an unsorted vector of numeric data
+// //' @param mem an integer corresponding to the memory size
+// //' @return a sorted vector
+// //' @export
+// // [[Rcpp::export]] //mandatory to export the function
+// std::vector<std::vector<int>> naive_storage_Rcpp(std::vector<int> j, int mem) {
+//   std::vector<std::vector<int>> permutations = generate_permutations(j);
+//
+//   int memoire_minimale = numeric_limits<int>::max();
+//   std::vector<std::vector<int>> best_bins;
+//
+//   for (const auto& permutation : permutations) {
+//     std::vector<int> memoires(j.size(), mem); // Initialise toutes les mémoires avec la même taille
+//     int nombre_memoires = 0;
+//     std::vector<vector<int>> bins(j.size());
+//
+//     for (int i = 0; i < permutation.size(); i++) {
+//       int jeu = permutation[i];
+//       bool fitted = false;
+//       for (int k = 0; k < bins.size(); k++) {
+//         if (accumulate(bins[k].begin(), bins[k].end(), 0) + jeu <= mem) {
+//           bins[k].push_back(jeu);
+//           memoires[k] -= jeu;
+//           fitted = true;
+//           break;
+//       }
+//     }
+//       if (!fitted) {
+//         bins[nombre_memoires].push_back(jeu);
+//         memoires[nombre_memoires] -= jeu;
+//         nombre_memoires++;
+//     }
+//   }
+//
+//     nombre_memoires = count_if(memoires.begin(), memoires.end(), [mem](int m) { return m < mem; });
+//
+//     if (nombre_memoires < memoire_minimale) {
+//       memoire_minimale = nombre_memoires;
+//       best_bins = bins;
+//     }
+//   }
+//
+//   best_bins.erase(remove_if(best_bins.begin(), best_bins.end(), [](const vector<int>& v) { return v.empty(); }), best_bins.end());
+//
+//   return best_bins;
+// }
 
 
 
-//' Insertion sort algorithm using C++
-//'
-//' @param j an unsorted vector of numeric data
-//' @param mem an integer corresponding to the memory size
-//' @return a sorted vector
-//' @export
-// [[Rcpp::export]] //mandatory to export the function
-std::vector<std::vector<int>> naive_storage_Rcpp(std::vector<int> j, int mem) {
-  std::vector<std::vector<int>> permutations = generate_permutations(j);
-
-  int memoire_minimale = numeric_limits<int>::max();
-  std::vector<std::vector<int>> best_bins;
-
-  for (const auto& permutation : permutations) {
-    std::vector<int> memoires(j.size(), mem); // Initialise toutes les mémoires avec la même taille
-    int nombre_memoires = 0;
-    std::vector<vector<int>> bins(j.size());
-
-    for (int i = 0; i < permutation.size(); i++) {
-      int jeu = permutation[i];
-      bool fitted = false;
-      for (int k = 0; k < bins.size(); k++) {
-        if (accumulate(bins[k].begin(), bins[k].end(), 0) + jeu <= mem) {
-          bins[k].push_back(jeu);
-          memoires[k] -= jeu;
-          fitted = true;
-          break;
-      }
-    }
-      if (!fitted) {
-        bins[nombre_memoires].push_back(jeu);
-        memoires[nombre_memoires] -= jeu;
-        nombre_memoires++;
-    }
-  }
-
-    nombre_memoires = count_if(memoires.begin(), memoires.end(), [mem](int m) { return m < mem; });
-
-    if (nombre_memoires < memoire_minimale) {
-      memoire_minimale = nombre_memoires;
-      best_bins = bins;
-    }
-  }
-
-  best_bins.erase(remove_if(best_bins.begin(), best_bins.end(), [](const vector<int>& v) { return v.empty(); }), best_bins.end());
-
-  return best_bins;
-}
-
+#include <vector>
+#include <algorithm>
+#include <limits>
+#include <tuple>
 
 
 std::vector<std::vector<int>> bfd(const std::vector<int>& items, int m) {
@@ -130,14 +136,8 @@ int lower_bound(const std::vector<int>& items, int m) {
 }
 
 
- //' Insertion sort algorithm using C++
- //'
- //' @param jeux an unsorted vector of numeric data
- //' @param m an integer corresponding to the memory size
- //' @return a sorted vector
- //' @export
- // [[Rcpp::export]] //mandatory to export the function
-int branch_and_bound_Rcpp(const std::vector<int>& jeux, int m) {
+
+int branch_and_bound(const std::vector<int>& jeux, int m) {
   int n = jeux.size();
   std::vector<int> sorted_jeux(jeux);
   // Trier jeux dans l'ordre décroissant
