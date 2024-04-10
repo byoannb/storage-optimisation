@@ -602,6 +602,20 @@ branch_and_bound <- function(jeux, m) {
 
 ## Analyse théorique de la complexité
 
+* La fonction borne_inf a une complexité temporelle de O(n), où n est le nombre d'éléments dans la liste items.
+• L’initialisation de la liste des bacs est une opération constante, donc en O(1).
+• La boucle qui itère sur chaque jeu a une complexité de O(n). Cependant, pour chaque jeu, nous avons une autre
+boucle qui itère sur les espaces mémoire. Dans le pire des cas, chaque jeu est placé dans une mémoire différente, donc
+il y a autant de mémoires que de jeux. Cela signifie que cette boucle a aussi une complexité de O(n). Comme cette
+boucle est à l’intérieur de la boucle sur les jeux, la complexité totale de ces deux boucles imbriquées est O(n2).
+• Les opérations à l’intérieur de la boucle sur les espaces mémoire sont toutes des opérations constantes, donc ayant
+une complexité en O(1). Cependant, étant à l’intérieur de la boucle sur les espaces mémoire, elles ont une complexité
+totale en O(n).
+• Enfin, l’opération de création d’un nouvel espace mémoire dans le cas où cela est néccesaire est à l’intérieur de la
+boucle sur les jeux, elle a donc une complexité totale en O(n).
+Ainsi, en combinant toutes ces complexités, on obtient une complexité totale pour l’algorithme en O(n2).
+3
+
 ## Vérification de la complexité sur des exemples
 
 ```{r, echo = FALSE, out.width="50%", fig.align="center"}
@@ -651,7 +665,6 @@ plot_R <- ggplot(naive_execution_data_R, aes(x = Size, y = ExecutionTime)) +
 plot_R
 ```
 
-Nous remarquons ici que, plus le nombre de jeux à ranger dans les cartes mémoires est grand, plus le temps augmente, mais ici de manière relativement **linéaire**.
+Nous remarquons ici que, plus le nombre de jeux à ranger dans les cartes mémoires est grand, plus le temps augmente, mais de manière moins rapide que pour la fonction naïve.
 
-Nous voyons, toutefois, que le temps d'exécution est plus faible pour la version `C++`, ce qui confirme nos attentes.
 
