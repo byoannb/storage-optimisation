@@ -2,6 +2,7 @@
 title: "**Algorithme d'optimisation de stockage**"
 author: "Yoann Bonnet, Victorien Leconte, Hugo Picard"
 date: "M2 Data Science, 2023 - 2024"
+geometry: "left=1.5cm,right=1.5cm,top=1.5cm,bottom=2cm"
 output: pdf_document
 ---
 
@@ -14,6 +15,7 @@ graphics.off()
 ```{r echo=FALSE}
 library(Rcpp)
 library(ggplot2)
+library(gridExtra)
 library(microbenchmark)
 ```
 
@@ -116,9 +118,9 @@ for (i in seq_along(bins_Cpp)) {
 
 * Par la suite, on itère sur chacun des jeux dans la liste triée. L'objectif est de trouver un espace mémoire où le jeu peut être placé. Pour cela, on itère une deuxième fois, cette fois-ci sur la liste des espaces mémoire : pour chaque mémoire, l'algorithme vérifie sur le jeu sélectionné peut être placé dans ce bac, sans dépasser la capacité de stockage. Pour cela, on vérifie si la somme des tailles des jeux déjà dans le bac courant additionné à la taille du jeu courant est inférieure ou égale à la capacité de stockage : si tel est le cas, le jeu courant peut être placé dans cet espace mémoire.
 
-* Une fois que le jeu a été placé dans un espace mémoire, on met à jour la variable `fitted` en lui attribuant la valeur `TRUE` pour indiquer que le jeu courant a trouvé son espace mémoire. Puis, on sort de la boucle sur les espaces mémoire avec l'instruction `break`.
+* Une fois que le jeu a été placé dans un espace mémoire, on met à jour la variable `fitted` en lui attribuant la valeur `TRUE` pour indiquer que le jeu courant a trouvé son espace mémoire. On sort de la boucle avec l'instruction `break`.
 
-* Enfin, nous vérifions si le jeu courant n'a pas été placé dans un espace mémoire existant. Si tel est le cas, nous créons un nouveau espace pour y placer le jeu courant.
+* Enfin, si le jeu courant n'a pas été placé dans un espace mémoire existant, créons un nouveau espace pour y placer le jeu courant.
 
 ## Analyse théorique de la complexité
 
@@ -139,9 +141,6 @@ Les algorithmes `R` et `C++` fonctionnent sensiblement de la même manière, l'a
 ## Vérification de la complexité sur des exemples
 
 ```{r, echo = FALSE, out.width="50%", fig.align="center"}
-library(ggplot2)
-library(gridExtra)
-
 measure_execution_time_R <- function(sizes, storage) {
   execution_times <- numeric(length(sizes))
   for (i in seq_along(sizes)) {
@@ -188,40 +187,20 @@ On reconnaît aisément une fonction sensiblement proche de la fonction $n \maps
 
 ## Comparaison des temps d'exécution pour le _First-fit-decreasing bin packing_
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, out.width="50%", fig.align="center"}
 source("StorageOptimisation/R/ffd_bin_packing.R")
 sourceCpp("StorageOptimisation/src/ffdBinPacking.cpp")
 
-measure_time_R <- function(n) {
-  items <- sample(1:10, n, replace = TRUE)
-  bin_size <- 10
-  microbenchmark(ffd_bin_packing(items, bin_size), times = 5)
-}
-
-measure_time_Cpp <- function(n) {
-  items <- sample(1:10, n, replace = TRUE)  
-  bin_size <- 10
-  microbenchmark(ffd_bin_packing_Rcpp(items, bin_size), times = 5)
-}
-
 sizes <- seq(10, 1000, by = 10)
 
-times_R <- sapply(sizes, function(n) mean(measure_time_R(n)$time))
+execution_times_R <- measure_execution_time_R(sizes, storage = 10)
+execution_times_Cpp <- measure_execution_time_cpp(sizes, storage = 10)
 
-times_Cpp <- sapply(sizes, function(n) mean(measure_time_Cpp(n)$time))
-```
-
-```{r, echo=FALSE, out.width="50%", fig.align="center"}
 ggplot() +
-  geom_point(aes(x = log(sizes), y = log(times_R), 
-                 color = "Algorithme R"), 
-             shape = 1) +
-  geom_point(aes(x = log(sizes), y = log(times_Cpp), 
-                 color = "Algorithme C++"), 
-             shape = 1) +
-  labs(x = "log(n)", y = "log(T(n))", 
-       title = "Comparison of R vs C++ implementation") +
-  scale_color_manual(values = c("blue", "red"), name = "Algorithme") +
+  geom_point(data = execution_times_R, aes(x = log(Size), y = log(ExecutionTime), color = Language), shape = 1) +
+  geom_point(data = execution_times_Cpp, aes(x = log(Size), y = log(ExecutionTime), color = Language), shape = 1) +
+  labs(x = "log(n)", y = "log(T(n))", title = "Comparison of R vs C++ implementation") +
+  scale_color_manual(values = c("blue", "red"), name = "Language") +
   theme_minimal()
 ```
 
