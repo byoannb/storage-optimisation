@@ -11,14 +11,14 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // ffd_bin_packing_Rcpp
-std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& items, int bin_size);
-RcppExport SEXP _StorageOptimisation_ffd_bin_packing_Rcpp(SEXP itemsSEXP, SEXP bin_sizeSEXP) {
+std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& games, int storage);
+RcppExport SEXP _StorageOptimisation_ffd_bin_packing_Rcpp(SEXP gamesSEXP, SEXP storageSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<int>& >::type items(itemsSEXP);
-    Rcpp::traits::input_parameter< int >::type bin_size(bin_sizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(ffd_bin_packing_Rcpp(items, bin_size));
+    Rcpp::traits::input_parameter< std::vector<int>& >::type games(gamesSEXP);
+    Rcpp::traits::input_parameter< int >::type storage(storageSEXP);
+    rcpp_result_gen = Rcpp::wrap(ffd_bin_packing_Rcpp(games, storage));
     return rcpp_result_gen;
 END_RCPP
 }
