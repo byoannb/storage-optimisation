@@ -1,4 +1,0 @@
-StorageOptimisation-package
-                        This package provide multiple functions in R
-                        and cpp to optimize storage of video games.
-naive_storage_Rcpp      Naive storage optimisation algorithm using C++

@@ -2,17 +2,18 @@
 % Please edit documentation in R/RcppExports.R
 \name{naive_storage_Rcpp}
 \alias{naive_storage_Rcpp}
-\title{Naive storage optimisation algorithm using C++}
+\title{Insertion sort algorithm using C++}
 \usage{
 naive_storage_Rcpp(j, mem)
 }
 \arguments{
-\item{j}{a list containing the size of the different video games}
-\item{mem}{the value of the maximum size for each storage}
+\item{j}{an unsorted vector of numeric data}
+
+\item{mem}{an integer corresponding to the memory size}
 }
 \value{
-the number of storages used
+a sorted vector
 }
 \description{
-Naive storage optimisation algorithm using C++
+Insertion sort algorithm using C++
 }

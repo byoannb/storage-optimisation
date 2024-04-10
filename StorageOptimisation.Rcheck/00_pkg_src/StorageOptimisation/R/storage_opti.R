@@ -1,35 +1,57 @@
-##  GPL-3 License
+## GPL-3 License
 ## Copyright (c) 2024 Yoann Bonnet & Victorien Leconte & Hugo Picard
 
 #' naive storage optimisation algorithm
 #'
 #' @description Optimize the storage of games
-#' @param storage a vector of storage facilities' sizes
-#' @param games a vector of games' sizes
+#' @param jeux a vector of storage facilities' sizes
+#' @param taille_memoire a vector of games' sizes
 #' @return the matrix of storaged games
-naive_storage_opti <- function(storage, games){
-
-  games = sort(games, decreasing = TRUE)
-  storages = sort(storages, decreasing = TRUE)
-
-  i_mem = 1
-  j_jeu = 1
-  mat = matrix(0, nrow = length(storages), ncol = length(games))
-  colnames(mat) = games
-  rownames(mat) = storages
-
-  while(length(games) != 0 && i_mem <= length(storages) && j_jeu <= length(games)){
-    if (storages[i_mem] - games[j_jeu] >= 0){
-      storages[i_mem] = storages[i_mem] - games[j_jeu]
-      mat[i_mem, j_jeu] = 1
-      j_jeu = j_jeu + 1
-    }
-    else {
-      i_mem = i_mem + 1
+naive_storage_opti <- function(jeux, taille_memoire) {
+  # Fonction pour générer toutes les permutations
+  generate_permutations <- function(elements) {
+    if (length(elements) <= 1) {
+      return(list(elements))
+    } else {
+      perms <- list()
+      for (i in 1:length(elements)) {
+        current_element <- elements[i]
+        remaining_elements <- elements[-i]
+        sub_perms <- generate_permutations(remaining_elements)
+        for (perm in sub_perms) {
+          perms <- c(perms, list(c(current_element, perm)))
+        }
+      }
+      return(perms)
     }
   }
 
-  cat(sum(rowSums(mat) != 0), "out of", length(storages), "storage facilities were used \n")
-  cat(sum(colSums(mat)), "out of", length(games), "games could be stored")
-  return(mat)
+  # Générer toutes les permutations possibles des jeux
+  permutations <- generate_permutations(jeux)
+
+  memoire_minimale <- Inf  # Initialisation à une valeur infinie
+
+  # Pour chaque permutation
+  for (permutation in permutations) {
+    memoires <- rep(taille_memoire, length(jeux))  # Initialise toutes les mémoires avec la même taille
+    nombre_memoires <- 0
+
+    # Essayer de placer chaque jeu dans une mémoire
+    for (jeu in permutation) {
+      for (i in 1:length(memoires)) {
+        if (jeu <= memoires[i]) {
+          memoires[i] <- memoires[i] - jeu
+          break
+        }
+      }
+    }
+
+    # Calculer le nombre de mémoires utilisées
+    nombre_memoires <- sum(taille_memoire - memoires > 0)
+
+    # Mettre à jour le nombre minimal de mémoires nécessaires
+    memoire_minimale <- min(memoire_minimale, nombre_memoires)
+  }
+
+  return(memoire_minimale)
 }

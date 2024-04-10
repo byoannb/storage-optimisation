@@ -2,7 +2,8 @@
 using namespace Rcpp; //to use the NumericVector object
 using namespace std;
 
-#include<vector> //to use std::vector<double>
+#include<vector> // to use std::vector double
+#include <limits>
 
 
 vector<vector<int>> generate_permutations(vector<int> elements) {
@@ -64,5 +65,91 @@ int naive_storage_Rcpp(std::vector<int> j, int mem)
   }
 
   return memoire_minimale;
+}
+
+
+
+
+int borne_inf(std::vector<int> j, int mem)
+{
+  double sum = 0;
+  for (int i = 0; i < j.size(); ++i) {
+    sum = sum + j[i];
+  }
+  return std::ceil(sum / mem);
+}
+
+
+
+
+int bfd(std::vector<int> j, int mem) {
+  int n = j.size();
+  std::vector<int> stockages(n, 0);
+  int num_stockages = 0;
+  for (int i = 0; i < n; ++i) {
+    if (num_stockages == 0) {
+      stockages[num_stockages++] = j[i];
+      continue;
+    }
+    int best_bin = 0;
+    int best_fit = std::numeric_limits<int>::max();
+    for (int j = 0; j < num_stockages; ++j) {
+      if (j[i] <= mem - stockages[j] && stockages[j] < best_fit) {
+        best_fit = stockages[j];
+        best_bin = j;
+      }
+    }
+    if (best_fit == std::numeric_limits<int>::max()) {
+      stockages[num_stockages++] = j[i];
+    } else {
+      stockages[best_bin] += j[i];
+    }
+  }
+  return num_stockages;
+}
+
+
+
+int branch_and_bound(std::vector<int> jeux, int m) {
+  std::sort(jeux.begin(), jeux.end(), std::greater<int>());
+  int best_sol = jeux.size();
+  int bfd_sol = bfd(jeux, m);
+  if (bfd_sol < best_sol) {
+    best_sol = bfd_sol;
+  }
+  std::vector<std::vector<int>> stack;
+  stack.push_back({0, 0, 0, borne_inf(jeux, m)});
+  while (!stack.empty()) {
+    auto node = stack.back();
+    stack.pop_back();
+    if (node[3] >= best_sol) {
+      continue;
+    }
+    if (node[2] + node[3] >= best_sol) {
+      continue;
+    }
+    if (node[2] + node[3] < best_sol) {
+      best_sol = node[2] + node[3];
+    }
+    if (node[1] == jeux.size()) {
+      continue;
+    }
+    for (int i = 0; i < jeux.size(); ++i) {
+      int new_bins = node[0];
+      int new_num_bins = node[1];
+      new_bins += jeux[i];
+      ++new_num_bins;
+      if (new_num_bins + borne_inf(std::vector<int>(jeux.begin() + i + 1, jeux.end()), m) >= best_sol) {
+        new_bins -= jeux[i];
+        --new_num_bins;
+        break;
+      }
+      std::vector<int> new_node = {new_bins, new_num_bins, 0, borne_inf(std::vector<int>(jeux.begin() + i + 1, jeux.end()), m)};
+      stack.push_back(new_node);
+      new_bins -= jeux[i];
+      --new_num_bins;
+    }
+  }
+  return best_sol;
 }
 
