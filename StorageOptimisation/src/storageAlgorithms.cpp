@@ -130,6 +130,79 @@ int lower_bound(const std::vector<int>& items, int bin_size) {
 }
 
 
+
+
+ // Taille maximale d'un objet
+#define MAX_SIZE 100
+
+ int n; // nombre d'objets
+ vector<int> sizes; // tableau des tailles des objets
+ vector<int> bins; // tableau des tailles des bacs
+ vector<int> best_bins; // meilleure solution trouvée
+ int best_num_bins; // nombre de bacs dans la meilleure solution
+
+ // Trie les objets par taille décroissante
+ void sort_items() {
+   sort(sizes.begin(), sizes.end(), greater<int>());
+ }
+
+ // Vérifie si un objet peut être ajouté à un bac
+ bool can_add_item(int bin, int item) {
+   return bins[bin] + sizes[item] <= MAX_SIZE;
+ }
+
+ // Ajoute un objet à un bac
+ void add_item(int bin, int item) {
+   bins[bin] += sizes[item];
+ }
+
+ // Supprime un objet d'un bac
+ void remove_item(int bin, int item) {
+   bins[bin] -= sizes[item];
+ }
+
+ // Recherche la meilleure solution en utilisant l'algorithme de Branch and Bound
+ void branch_and_bound(int item, int num_bins, int max_size) {
+   // Cas de base : tous les objets ont été affectés à un bac
+   if (item == n) {
+     // Mise à jour de la meilleure solution
+     if (num_bins < best_num_bins) {
+       best_num_bins = num_bins;
+       best_bins.assign(bins.begin(), bins.begin() + num_bins);
+     }
+     return;
+   }
+
+   // Bornes inférieure et supérieure pour le nombre de bacs nécessaires
+   int lower_bound = num_bins;
+   int upper_bound = best_num_bins;
+   int total_size = 0;
+   for (int i = item; i < n; i++) {
+     total_size += sizes[i];
+     upper_bound = max(upper_bound, (total_size + max_size - 1) / max_size);
+   }
+
+   // Vérification de la borne supérieure
+   if (lower_bound >= upper_bound) return;
+
+   // Affectation de l'objet courant au premier bac possible
+   for (int bin = 0; bin < num_bins; bin++) {
+     if (can_add_item(bin, item)) {
+       add_item(bin, item);
+       branch_and_bound(item + 1, num_bins, max_size);
+       remove_item(bin, item);
+       return;
+     }
+   }
+
+   // Ajout d'un nouveau bac et affectation de l'objet courant à ce bac
+   if (num_bins < best_num_bins) {
+     bins[num_bins] = sizes[item];
+     branch_and_bound(item + 1, num_bins + 1, max_size);
+     bins[num_bins] = 0;
+   }
+ }
+
  //' Insertion sort algorithm using C++
  //'
  //' @param jeux an unsorted vector of numeric data
@@ -137,65 +210,15 @@ int lower_bound(const std::vector<int>& items, int bin_size) {
  //' @return a sorted vector
  //' @export
  // [[Rcpp::export]] //mandatory to export the function
-int branch_and_bound_Rcpp(const std::vector<int>& jeux, int m) {
-   int n = jeux.size();
-   std::vector<int> sorted_jeux(jeux);
-   // Trier jeux dans l'ordre décroissant
-   std::sort(sorted_jeux.begin(), sorted_jeux.end(), std::greater<int>());
-
-   int best_sol = n;
-
-   std::deque<std::tuple<int, std::size_t, std::vector<int>, int, int>> stack;
-
-   int current_depth = 0;
-   std::size_t sorted_copy_size = sorted_jeux.size();
-   int current_bound = lower_bound(sorted_jeux, m);
-
-   std::tuple<int, std::size_t, std::vector<int>, int, int> state(current_depth, sorted_copy_size, std::vector<int>(n), 0, current_bound);
-   stack.push_back(state);
-
-   while (!stack.empty()) {
-     std::tuple<int, std::size_t, std::vector<int>, int, int> node = stack.back();
-     stack.pop_back();
-
-     if (std::get<1>(node) < 1) {
-       continue;
-     }
-
-     // Utiliser la fonction bfd fournie pour le bin packing
-     std::vector<std::vector<int>> bins = bfd(std::get<2>(node), m);
-     int bfd_sol = bins.size();
-
-     if (bfd_sol < best_sol) {
-       best_sol = bfd_sol;
-     }
-
-     std::vector<int> new_bins = std::get<2>(node);
-     int new_num_bins = std::get<3>(node);
-     for (int i = 0; i < std::get<2>(node).size(); ++i) {
-       std::vector<int> new_bins = std::get<2>(node); // Copie des bacs actuels
-       new_bins[i] += std::get<2>(node)[0]; // Ajout de l'élément actuel au bac i
-       int new_num_bins = std::get<3>(node) + 1; // Mise à jour du nombre de bacs
-       if (new_num_bins + lower_bound(std::vector<int>(std::get<2>(node).begin() + 1, std::get<2>(node).end()), m) >= best_sol) {
-         continue; // Passer au bac suivant si la borne inférieure est trop élevée
-       }
-       std::vector<int> new_items(std::get<2>(node).begin() + 1, std::get<2>(node).end()); // Nouveaux éléments restants à traiter
-       int new_bound = lower_bound(new_items, m); // Nouvelle borne inférieure
-       std::tuple<int, std::size_t, std::vector<int>, int, int> new_node = {std::get<0>(node) + 1, std::get<1>(node), new_bins, new_num_bins, new_bound};
-       stack.push_back(new_node); // Ajouter le nouveau nœud à la pile
-     }
-
-
-     if (std::get<4>(node) >= best_sol) {
-       continue;
-     }
-     if (std::get<3>(node) + std::get<4>(node) >= best_sol) {
-       continue;
-     }
-     if (std::get<3>(node) + std::get<4>(node) < best_sol) {
-       best_sol = std::get<3>(node) + std::get<4>(node);
-     }
-   }
-   return best_sol;
+ std::vector<int> solve_bin_packing(std::vector<int> c, int max_bin_size) {
+   n = c.size();
+   sizes.assign(c.begin(), c.end());
+   bins.assign(n, 0);
+   best_bins.clear();
+   best_num_bins = numeric_limits<int>::max();
+   int max_size = max_bin_size;
+   sort_items();
+   branch_and_bound(0, 0, max_size);
+   return best_bins;
  }
 

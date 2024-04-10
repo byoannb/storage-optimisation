@@ -34,15 +34,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// branch_and_bound_Rcpp
-int branch_and_bound_Rcpp(const std::vector<int>& jeux, int m);
-RcppExport SEXP _StorageOptimisation_branch_and_bound_Rcpp(SEXP jeuxSEXP, SEXP mSEXP) {
+// solve_bin_packing
+std::vector<int> solve_bin_packing(std::vector<int> c, int max_bin_size);
+RcppExport SEXP _StorageOptimisation_solve_bin_packing(SEXP cSEXP, SEXP max_bin_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type jeux(jeuxSEXP);
-    Rcpp::traits::input_parameter< int >::type m(mSEXP);
-    rcpp_result_gen = Rcpp::wrap(branch_and_bound_Rcpp(jeux, m));
+    Rcpp::traits::input_parameter< std::vector<int> >::type c(cSEXP);
+    Rcpp::traits::input_parameter< int >::type max_bin_size(max_bin_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(solve_bin_packing(c, max_bin_size));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -50,7 +50,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_StorageOptimisation_ffd_bin_packing_Rcpp", (DL_FUNC) &_StorageOptimisation_ffd_bin_packing_Rcpp, 2},
     {"_StorageOptimisation_naive_storage_Rcpp", (DL_FUNC) &_StorageOptimisation_naive_storage_Rcpp, 2},
-    {"_StorageOptimisation_branch_and_bound_Rcpp", (DL_FUNC) &_StorageOptimisation_branch_and_bound_Rcpp, 2},
+    {"_StorageOptimisation_solve_bin_packing", (DL_FUNC) &_StorageOptimisation_solve_bin_packing, 2},
     {NULL, NULL, 0}
 };
 

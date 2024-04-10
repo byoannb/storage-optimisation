@@ -591,3 +591,67 @@ branch_and_bound <- function(jeux, m) {
 
 ```
 
+
+## Explication de l'algorithme
+
+* La fonction `borne_inf` calcule la borne inférieure du nombre de bacs nécessaires pour stocker tous les éléments. Ce qui nous servira pour éliminer des solutions.
+
+* La fonction `bfd` implémente l'algorithme glouton Best Fit Decreasing similaire au `ffd` décris précédemment.
+
+* La fonction `branch_and_bound` implémente l'algorithme de Branch and Bound pour résoudre le problème de Bin Packing. Elle prend en entrée une liste d'éléments jeux et la taille maximale d'un bac m, et renvoie le nombre minimal de bacs nécessaires pour stocker tous les éléments. Elle commence par trier les éléments par ordre décroissant de taille, puis initialise la meilleure solution trouvée à la taille maximale de la liste d'éléments. Ensuite, elle appelle la fonction `bfd` pour obtenir une solution initiale, et met à jour la meilleure solution trouvée si la solution initiale est meilleure. Puis, elle utilise une pile pour explorer récursivement toutes les solutions possibles en utilisant l'algorithme de Branch and Bound. À chaque itération, elle calcule la borne inférieure du nombre de bacs nécessaires pour stocker les éléments restants, et utilise cette borne pour élague les solutions qui ne peuvent pas être meilleures que la meilleure solution trouvée. Enfin, elle renvoie la meilleure solution trouvée.
+
+## Analyse théorique de la complexité
+
+## Vérification de la complexité sur des exemples
+
+```{r, echo = FALSE, out.width="50%", fig.align="center"}
+bb_execution_time_R <- function(sizes, storage) {
+  execution_times <- numeric(length(sizes))
+  for (i in seq_along(sizes)) {
+    games <- runif(sizes[i], min = 1, max = 100)  
+    execution_times[i] <- median(microbenchmark(branch_and_bound(games, storage), 
+                                                times = 10)$time)
+  }
+  return(data.frame(Size = sizes, ExecutionTime = execution_times))
+}
+
+# naive_execution_time_cpp <- function(sizes, storage) {
+#   execution_times <- numeric(length(sizes))
+#   for (i in seq_along(sizes)) {
+#     games <- runif(sizes[i], min = 1, max = 100)  
+#     execution_times[i] <- median(microbenchmark(naive_storage_Rcpp(games, storage), 
+#                                                 times = 10)$time)
+#   }
+#   return(data.frame(Size = sizes, ExecutionTime = execution_times))
+# }
+
+
+sizes <- seq(1, 20, by = 1)
+storage <- 100
+
+naive_execution_data_R <- bb_execution_time_R(sizes, storage)
+
+# naive_execution_data_cpp <- naive_execution_time_cpp(sizes, storage)
+
+plot_R <- ggplot(naive_execution_data_R, aes(x = Size, y = ExecutionTime)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
+       title = "Complexité (version R)") +
+  theme_minimal()
+
+# plot_cpp <- ggplot(naive_execution_data_cpp, aes(x = Size, y = ExecutionTime)) +
+#   geom_line() +
+#   geom_point() +
+#   labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
+#        title = "Complexité (version C++)") +
+#   theme_minimal()
+
+# grid.arrange(plot_R, plot_cpp, ncol = 2)
+plot_R
+```
+
+Nous remarquons ici que, plus le nombre de jeux à ranger dans les cartes mémoires est grand, plus le temps augmente, mais ici de manière relativement **linéaire**.
+
+Nous voyons, toutefois, que le temps d'exécution est plus faible pour la version `C++`, ce qui confirme nos attentes.
+

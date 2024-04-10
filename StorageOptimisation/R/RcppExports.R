@@ -21,7 +21,7 @@ naive_storage_Rcpp <- function(j, mem) {
     .Call(`_StorageOptimisation_naive_storage_Rcpp`, j, mem)
 }
 
-branch_and_bound_Rcpp <- function(jeux, m) {
-    .Call(`_StorageOptimisation_branch_and_bound_Rcpp`, jeux, m)
+solve_bin_packing <- function(c, max_bin_size) {
+    .Call(`_StorageOptimisation_solve_bin_packing`, c, max_bin_size)
 }
 
