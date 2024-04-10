@@ -7,7 +7,7 @@
 naive_storage_opti(jeux, taille_memoire)
 }
 \arguments{
-\item{taille memoire}{a vector of storage facilities' sizes}
+\item{taille_memoire}{a vector of storage facilities' sizes}
 
 \item{jeux}{a vector of games' sizes}
 }

@@ -79,6 +79,8 @@ std::vector<std::vector<int>> naive_storage_Rcpp(std::vector<int> j, int mem) {
     }
   }
 
+  best_bins.erase(remove_if(best_bins.begin(), best_bins.end(), [](const vector<int>& v) { return v.empty(); }), best_bins.end());
+
   return best_bins;
 }
 
