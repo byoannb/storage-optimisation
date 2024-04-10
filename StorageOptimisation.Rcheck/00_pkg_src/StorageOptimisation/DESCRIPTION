@@ -21,7 +21,7 @@ Imports: Rcpp (>= 1.0.11)
 LinkingTo: Rcpp
 RoxygenNote: 7.3.1
 NeedsCompilation: yes
-Packaged: 2024-04-10 17:06:58 UTC; hugop
+Packaged: 2024-04-10 18:11:39 UTC; hugop
 Author: Yoann Bonnet [aut],
   Victorien Lecomte [aut],
   Hugo Picard [aut, cre]

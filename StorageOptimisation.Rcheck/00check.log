@@ -19,7 +19,7 @@
 * checking for hidden files and directories ... OK
 * checking for portable file names ... OK
 * checking serialization versions ... OK
-* checking whether package 'StorageOptimisation' can be installed ... [14s] OK
+* checking whether package 'StorageOptimisation' can be installed ... [17s] OK
 * used C++ compiler: 'G__~1.EXE (GCC) 12.3.0'
 * checking installed package size ... OK
 * checking package directory ... OK
@@ -50,13 +50,22 @@ Non-standard file/directory found at top level:
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... WARNING
 Objets code non documentés :
-  'bfd' 'borne_inf' 'branch_and_bound'
+  'bfd' 'borne_inf' 'branch_and_bound' 'branch_and_bound_Rcpp'
 All user-level objects in a package should have documentation entries.
 See chapter 'Writing R documentation files' in the 'Writing R
 Extensions' manual.
 * checking for code/documentation mismatches ... WARNING
-Fonctions ou méthodes avec 'usage' dans la documentation de l'objet 'naive_storage_Rcpp', mais pas dans le code :
-  'naive_storage_Rcpp'
+Erreurs 'codoc' pour la documentation de l'objet 'ffd_bin_packing_Rcpp' :
+ffd_bin_packing_Rcpp
+  Code : function(games, storage)
+  Docs : function(items, bin_size)
+  Noms d'arguments dans le code mais pas dans la doc :
+    games storage
+  Noms d'arguments dans la doc mais pas dans le code :
+    items bin_size
+  Incohérence dans le nom des arguments :
+    Position: 1 Code: games Docs: items
+    Position: 2 Code: storage Docs: bin_size
 
 * checking Rd \usage sections ... OK
 * checking Rd contents ... OK

@@ -7,7 +7,21 @@
 #' @return A vector of vectors representing the bins, where each inner vector
 #'         contains the sizes of items packed into a single bin.
 #' @export
-ffd_bin_packing_Rcpp <- function(items, bin_size) {
-    .Call(`_StorageOptimisation_ffd_bin_packing_Rcpp`, items, bin_size)
+ffd_bin_packing_Rcpp <- function(games, storage) {
+    .Call(`_StorageOptimisation_ffd_bin_packing_Rcpp`, games, storage)
+}
+
+#' Insertion sort algorithm using C++
+#'
+#' @param j an unsorted vector of numeric data
+#' @param mem an integer corresponding to the memory size
+#' @return a sorted vector
+#' @export
+naive_storage_Rcpp <- function(j, mem) {
+    .Call(`_StorageOptimisation_naive_storage_Rcpp`, j, mem)
+}
+
+branch_and_bound_Rcpp <- function(jeux, m) {
+    .Call(`_StorageOptimisation_branch_and_bound_Rcpp`, jeux, m)
 }
 

@@ -529,3 +529,65 @@ ggplot() +
 Nous pouvons voir que les deux versions des algorithmes sont assez semblables en termes de temps. Cependant, à taille égale, l'algorithme `R` est plus gourmand, ce qui était attendu.
 
 # Algorithme optimisé
+Dans ce modèle, nous utiliserons une approche exacte optimisée. En effet, on utilise l'algorithme branch and bound qui explore un arbre de manière sélective pour trouver la solution optimale. Cet algorithme utilise une borne inf permettant d'élaguer les branches qui ne peuvent pas contenir la solution optimale.
+
+## Implémentations en `R` et en `C++`
+```{r}
+branch_and_bound <- function(jeux, m) {
+  n <- length(jeux)
+  jeux <- sort(jeux, decreasing = TRUE)
+  best_sol <- n
+  bfd_sol <- length(bfd(jeux, m))
+  if (bfd_sol < best_sol) {
+    best_sol <- bfd_sol
+  }
+  stack <- list()
+  stack[[1]] <- list(level = 0, items = jeux, bins = numeric(n), num_bins = 0, bound = borne_inf(jeux, m))
+  while (length(stack) > 0) {
+    node <- stack[[length(stack)]]
+    stack <- stack[-length(stack)]
+
+    if (length(node$items) == 0) {
+      next
+    }
+    # Exécuter l'algorithme BFD
+    bfd_node <- bfd(node$items, m)
+    if (length(bfd_node) < best_sol) {
+      best_sol <- length(bfd_node)
+    }
+    new_bins <- node$bins
+    new_num_bins <- node$num_bins
+    for (i in 1:length(node$items)) {
+      new_bins[i] <- new_bins[i] + node$items[1]
+      new_num_bins <- new_num_bins + 1
+      if (new_num_bins + borne_inf(node$items[-1], m) >= best_sol) {
+        new_bins[i] <- new_bins[i] - node$items[1]
+        new_num_bins <- new_num_bins - 1
+        break
+      }
+      new_items <- node$items[-1]
+      new_bound <- borne_inf(new_items, m)
+      new_node <- list(level = node$level + 1, items = new_items, bins = new_bins, num_bins = new_num_bins, bound = new_bound)
+      stack <- c(stack, list(new_node))
+      new_bins[i] <- new_bins[i] - node$items[1]
+      new_num_bins <- new_num_bins - 1
+
+      if (node$bound >= best_sol) {
+        next
+      }
+      if (node$num_bins + node$bound >= best_sol) {
+        next
+      }
+      if (node$num_bins + node$bound < best_sol) {
+        best_sol <- node$num_bins + node$bound
+      }
+    }
+  }
+  return(best_sol)
+}
+```
+
+```{Rcpp}
+
+```
+
