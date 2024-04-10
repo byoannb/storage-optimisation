@@ -422,17 +422,17 @@ for (i in seq_along(naive_Cpp)) {
 
 ## Explication de l'algorithme
 
-* Dans un premier temps, l'algorithme commence par générer toutes les permutations possibles des jeux donnés en entrée à l'aide d'une fonction récursive appelée `generate_permutations`.
+* Dans un premier temps, l'algorithme commence par générer toutes les permutations possibles des jeux donnés en entrée à l'aide d'une fonction récursive appelée `generate_permutations`. La complexité associée est en $\text{O}(n!)$.
 
-* Ensuite, pour chaque permutation générée, l'algorithme itère pour placer chaque jeu dans une carte mémoire. Il utilise une approche gloutonne en essayant de placer chaque jeu dans la première carte mémoire disponible qui a suffisamment d'espace. 
+* Ensuite, pour chaque permutation générée, l'algorithme itère pour placer chaque jeu dans une carte mémoire. Il utilise une approche gloutonne en essayant de placer chaque jeu dans la première carte mémoire disponible qui a suffisamment d'espace. Cette étape a une complexité en $\text{O}(n.m)$, où $m$ représente le nombre de cartes mémoire utilisé.
 
-* Une fois tous les jeux placés, l'algorithme calcule le nombre de cartes mémoire utilisées en comptant le nombre de cartes restantes avec de l'espace libre.
+* Une fois tous les jeux placés, l'algorithme calcule le nombre de cartes mémoire utilisées en comptant le nombre de cartes restantes avec de l'espace libre, ce qui nous donne une complexité en $\text{O}(m)$.
 
-* Pendant le processus, l'algorithme maintient une variable `memoire_minimale` qui stocke le nombre minimal de cartes mémoire nécessaires pour stocker tous les jeux. Cette variable est initialisée à l'infini et est mise à jour si le nouveau nombre de cartes mémoires à utilisé est plus faible que `memoire_minimale`, et cela pour chaque chaque itération sur la permutaion. On stocke également la répartition des jeux dans les cartes mémoires grace à une variable `best_placement` qui est mis à jour en meme temps que `memoire_minimale`. 
+* Pendant le processus, l'algorithme maintient une variable `memoire_minimale` qui stocke le nombre minimal de cartes mémoire nécessaires pour stocker tous les jeux. Cette variable est initialisée à l'infini et est mise à jour si le nouveau nombre de cartes mémoires à utilisé est plus faible que `memoire_minimale`, et cela pour chaque chaque itération sur la permutaion. On stocke également la répartition des jeux dans les cartes mémoires grace à une variable `best_placement` qui est mis à jour en meme temps que `memoire_minimale`. Cette opération est réalisé en temps constant.
 
-* Enfin, l'algorithme retourne `memoire_minimale`, et `best_placement` représentant le nombre minimal de cartes mémoire nécessaires pour stocker tous les jeux, et la répartition de chaque jeux dans les cartes mémoires.
+* Enfin, l'algorithme retourne `memoire_minimale`, et `best_placement` représentant le nombre minimal de cartes mémoire nécessaires pour stocker tous les jeux, et la répartition de chaque jeux dans les cartes mémoires. Cette opération est réalisé en temps constant.
 
-## Analyse théorique de la complexité
+Ainsi, la complexité temporelle finale de notre algorithme est en $\text{O}(m.n!)$, ce qui s'explique par la génération de toutes les permutations possibles des jeux. Cela rend, en pratique, l'algorithme impraticable pour un grand nombre de jeux.
 
 ## Vérification de la complexité sur des exemples
 
@@ -529,9 +529,13 @@ ggplot() +
 Nous pouvons voir que les deux versions des algorithmes sont assez semblables en termes de temps. Cependant, à taille égale, l'algorithme `R` est plus gourmand, ce qui était attendu.
 
 # Algorithme optimisé
+
+# Algorithme optimisé
+
 Dans ce modèle, nous utiliserons une approche exacte optimisée. En effet, on utilise l'algorithme branch and bound qui explore un arbre de manière sélective pour trouver la solution optimale. Cet algorithme utilise une borne inf permettant d'élaguer les branches qui ne peuvent pas contenir la solution optimale.
 
 ## Implémentations en `R` et en `C++`
+
 ```{r}
 branch_and_bound <- function(jeux, m) {
   n <- length(jeux)
@@ -587,11 +591,6 @@ branch_and_bound <- function(jeux, m) {
 }
 ```
 
-```{Rcpp}
-
-```
-
-
 ## Explication de l'algorithme
 
 * La fonction `borne_inf` calcule la borne inférieure du nombre de bacs nécessaires pour stocker tous les éléments. Ce qui nous servira pour éliminer des solutions.
@@ -602,19 +601,13 @@ branch_and_bound <- function(jeux, m) {
 
 ## Analyse théorique de la complexité
 
-* La fonction borne_inf a une complexité temporelle de O(n), où n est le nombre d'éléments dans la liste items.
-• L’initialisation de la liste des bacs est une opération constante, donc en O(1).
-• La boucle qui itère sur chaque jeu a une complexité de O(n). Cependant, pour chaque jeu, nous avons une autre
-boucle qui itère sur les espaces mémoire. Dans le pire des cas, chaque jeu est placé dans une mémoire différente, donc
-il y a autant de mémoires que de jeux. Cela signifie que cette boucle a aussi une complexité de O(n). Comme cette
-boucle est à l’intérieur de la boucle sur les jeux, la complexité totale de ces deux boucles imbriquées est O(n2).
-• Les opérations à l’intérieur de la boucle sur les espaces mémoire sont toutes des opérations constantes, donc ayant
-une complexité en O(1). Cependant, étant à l’intérieur de la boucle sur les espaces mémoire, elles ont une complexité
-totale en O(n).
-• Enfin, l’opération de création d’un nouvel espace mémoire dans le cas où cela est néccesaire est à l’intérieur de la
-boucle sur les jeux, elle a donc une complexité totale en O(n).
-Ainsi, en combinant toutes ces complexités, on obtient une complexité totale pour l’algorithme en O(n2).
-3
+* La fonction `borne_inf` parcourt tous les jeux, la complexité associée est $\text{O}(n)$.
+
+* La fonction `bfd` parcourt la liste des jeux et pour chaque jeu, elle parcourt la liste des stockages pour trouver le meilleur ajustement, donc la complexité associée est $\text{O}(n^2)$.
+
+* La fonction `branch_and_bound` a une complexité temporelle qui dépend de la taille de l'arbre de recherche. Dans le pire des cas, l'algorithme peut avoir une complexité temporelle exponentielle, car chaque nœud de l'arbre peut avoir jusqu'à n fils, où n est le nombre d'éléments dans la liste jeux. Cependant, la complexité réelle de l'algorithme dépend de la fonction de borne utilisée pour élaguer l'arbre de recherche. Si la fonction de borne est suffisamment précise, l'algorithme peut avoir une complexité temporelle polynomiale. Ce qui donne une complexité dans le pire des cas de $\text{O}(n^n)$, n étant le nombre de jeux.
+
+Ceci nous donne donc au total une complexité dans le pire des cas de $\text{O}(n^n)$, c'est-à-dire exponentielle.
 
 ## Vérification de la complexité sur des exemples
 
@@ -629,23 +622,13 @@ bb_execution_time_R <- function(sizes, storage) {
   return(data.frame(Size = sizes, ExecutionTime = execution_times))
 }
 
-# naive_execution_time_cpp <- function(sizes, storage) {
-#   execution_times <- numeric(length(sizes))
-#   for (i in seq_along(sizes)) {
-#     games <- runif(sizes[i], min = 1, max = 100)  
-#     execution_times[i] <- median(microbenchmark(naive_storage_Rcpp(games, storage), 
-#                                                 times = 10)$time)
-#   }
-#   return(data.frame(Size = sizes, ExecutionTime = execution_times))
-# }
 
 
-sizes <- seq(1, 20, by = 1)
+sizes <- seq(1, 30, by = 1)
 storage <- 100
 
 naive_execution_data_R <- bb_execution_time_R(sizes, storage)
 
-# naive_execution_data_cpp <- naive_execution_time_cpp(sizes, storage)
 
 plot_R <- ggplot(naive_execution_data_R, aes(x = Size, y = ExecutionTime)) +
   geom_line() +
@@ -654,17 +637,59 @@ plot_R <- ggplot(naive_execution_data_R, aes(x = Size, y = ExecutionTime)) +
        title = "Complexité (version R)") +
   theme_minimal()
 
-# plot_cpp <- ggplot(naive_execution_data_cpp, aes(x = Size, y = ExecutionTime)) +
-#   geom_line() +
-#   geom_point() +
-#   labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
-#        title = "Complexité (version C++)") +
-#   theme_minimal()
-
-# grid.arrange(plot_R, plot_cpp, ncol = 2)
 plot_R
 ```
 
-Nous remarquons ici que, plus le nombre de jeux à ranger dans les cartes mémoires est grand, plus le temps augmente, mais de manière moins rapide que pour la fonction naïve.
+Nous remarquons ici que, plus le nombre de jeux à ranger dans les cartes mémoires est grand, plus le temps augmente, mais de manière moins rapide que pour la fonction naïve. Cependant, la complexité ne semble pas exponentielle comme vu en théorie. Cela peut s'expiquer par le fait que de nombreuses branches seront élaguées grâce à la borne minimale.
 
+# Comparaison entre les différents algorithmes
 
+```{r, echo=FALSE, out.width="50%", fig.align="center"}
+source("StorageOptimisation/R/storage_opti.R")
+
+naive_time <- function(n) {
+  items <- sample(1:10, n, replace = TRUE)
+  bin_size <- 10
+  x <- microbenchmark(naive_storage(items, bin_size), times = 5)
+  
+  return(mean(x$time))
+}
+
+ffd_time <- function(n) {
+  items <- sample(1:10, n, replace = TRUE)
+  bin_size <- 10
+  x <- microbenchmark(ffd_bin_packing(items, bin_size), times = 5)
+  
+  return(mean(x$time))
+}
+
+bab_time <- function(n) {
+  items <- sample(1:10, n, replace = TRUE)
+  bin_size <- 10
+  x <- microbenchmark(branch_and_bound(items, bin_size), times = 5)
+  
+  return(mean(x$time))
+}
+
+sizes <- seq(1, 8, by = 1)
+
+times_naive <- sapply(sizes, naive_time)
+times_ffd <- sapply(sizes, ffd_time)
+times_bab <- sapply(sizes, bab_time)
+
+data <- data.frame(Size = sizes,
+                   Naive_Storage = times_naive,
+                   FFD_Bin_Packing = times_ffd,
+                   Branch_and_Bound = times_bab)
+
+ggplot(data, aes(x = log(Size), y = log(Naive_Storage))) +
+  geom_line(color = "blue") +
+  geom_line(aes(x = log(Size), y = log(FFD_Bin_Packing)), color = "red") +
+  geom_line(aes(x = log(Size), y = log(Branch_and_Bound)), color = "green") +
+  labs(x = "log(n)", y = "log(T(n))", title = "Comparaison des performances des algorithmes") +
+  scale_color_manual(values = c("blue", "red", "green"),
+                     labels = c("Naive Storage", "FFD Bin Packing", "Branch and Bound")) +
+  theme_minimal()
+```
+
+Nous pouvons voir, sur le graphique ci-dessus, que l'algorithme naïf exact est l'algorithme ayant la complexité temporelle la plus élevée, cette dernière s'envolant très rapidement avec $n$. Les algorithmes de _FFD Bin Packing_ et _Branch \& Bound_ ont, quant à eux, une complexité temporelle relativement proche, ce qui est apparaît comme cohérent.
