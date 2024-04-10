@@ -693,3 +693,77 @@ ggplot(data, aes(x = log(Size), y = log(Naive_Storage))) +
 ```
 
 Nous pouvons voir, sur le graphique ci-dessus, que l'algorithme naïf exact est l'algorithme ayant la complexité temporelle la plus élevée, cette dernière s'envolant très rapidement avec $n$. Les algorithmes de _FFD Bin Packing_ et _Branch \& Bound_ ont, quant à eux, une complexité temporelle relativement proche, ce qui est apparaît comme cohérent.
+
+Ayant des complexités temporelles relativement similaires, nous allons comparer les comportements des algorithmes _FFD Bin Packing_ et _Branch \& Boudn_ sur différentes sortes de problèmes. Certains impliqueront uniquement des jeux de grande taille, d'autres uniquement des jeux de petite taille, tandis que d'autres encore combineront les deux types de jeux.
+
+```{r, echo=FALSE}
+compare_algorithms <- function(nb_vecteurs, taille_vecteur, lower_bound, upper_bound, taille_carte) {
+
+  vecteurs <- replicate(nb_vecteurs, sample(lower_bound:upper_bound, taille_vecteur, replace = TRUE))
+
+  num_bins_ffd <- c()
+  num_bins_BB <- c()
+
+  for (i in 1:ncol(vecteurs)) {
+    num_bins_ffd <- c(num_bins_ffd, ffd_bin_packing(vecteurs[, i], taille_carte))
+    num_bins_BB <- c(num_bins_BB, branch_and_bound(vecteurs[, i], taille_carte))
+  }
+
+  cat("\nNombre de fois où l'algorithme heuristique n'est pas optimal:\n")
+  
+  diff<-sum(num_bins_BB < num_bins_ffd)
+  cat(diff, "\n")
+
+  different_num_bins <- which(num_bins_BB < num_bins_ffd)
+
+  #cat("\nNombre de bacs pour l'algorithme heuristique lorsqu'il n'est pas optimal:\n")
+  ffd_bigger_bins<-num_bins_ffd[different_num_bins]
+
+  #cat("\nNombre de bacs pour l'algorithme exact lorsqu'il est meilleur que l'algorithme heuristique:\n")
+  BB_smaller_bins<-num_bins_BB[different_num_bins]
+  
+  if(diff!=0){
+  hist(ffd_bigger_bins-BB_smaller_bins)
+  }
+  return(list("number_different"=diff,"BB_smaller_bins"=BB_smaller_bins,"ffd_bigger_bins"=ffd_bigger_bins))
+}
+```
+
+Dans un premier temps, concentrons nous sur un échantillon de jeux de grande taille. Nous pouvons voir, ci-dessous, que lorsque nous nous retrouvons dans un cas où tous les jeux sont de taille supérieure à la moitié de la taille de la carte mémoire, les deux algorithmes renvoient bien la même chose (un jeu par carte mémoire).
+
+```{r, echo=FALSE}
+compare_algorithms(nb_vecteurs=50,
+                   taille_vecteur = 200,
+                   lower_bound = 51,
+                   upper_bound = 80,
+                   taille_carte = 100)
+```
+Dans ce deuxième cas, en ne considérant que des jeux ayant un faible poids, les deux algorithmes renvoient également la même solution.
+
+```{r, echo=FALSE}
+compare_algorithms(nb_vecteurs=50,
+                   taille_vecteur = 200,
+                   lower_bound = 1,
+                   upper_bound = 30,
+                   taille_carte = 100)
+```
+
+```{r, echo=FALSE}
+set.seed(1234)
+compare_algorithms(nb_vecteurs=50,
+                   taille_vecteur = 200,
+                   lower_bound = 1,
+                   upper_bound = 80,
+                   taille_carte = 100)
+```
+
+```{r}
+set.seed(3549)
+compare_algorithms(nb_vecteurs=50,
+                   taille_vecteur = 200,
+                   lower_bound = 40,
+                   upper_bound = 60,
+                   taille_carte = 100)
+```
+
+Finalement, lorsque les jeux sont de taille assez hétérogène, nous nous retrouvons dans une situation où les deux algorithmes renvoient des solutions assez différentes, d'autant plus lorsque les tailles des jeux sont centrées autour de la moitié de la capacité de stockage, ce qui est cohérent avec notre intuition.
