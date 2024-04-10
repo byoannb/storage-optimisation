@@ -159,5 +159,123 @@ res
 ```
 
 ```{r}
-plot(c(1:9), res)
+plot(c(1:11), res, main="Temps d'éxécution pour la fonction naive_storage_Rcpp", col = "blue", pch = 19, cex = .6)
 ```
+
+## Branch and bound
+
+```{r}
+# Fonction pour calculer la borne inférieure L1
+borne_inf <- function(jeux, m) {
+  return(ceiling(sum(jeux) / m))
+}
+
+# Fonction pour appliquer la stratégie Best-Fit Decreasing (BFD)
+# Fonction pour appliquer la stratégie Best-Fit Decreasing (BFD)
+bfd <- function(jeux, m) {
+  n <- length(jeux)
+  stockages <- numeric(n)
+  num_stockages <- 0
+  for (i in 1:n) {
+    if (num_stockages == 0) {
+      stockages[num_stockages + 1] <- jeux[i]
+      num_stockages <- num_stockages + 1
+      next
+    }
+    best_bin <- 0
+    best_fit <- Inf
+    for (j in 1:num_stockages) {
+      if (jeux[i] <= m - stockages[j] && stockages[j] < best_fit) {
+        best_fit <- stockages[j]
+        best_bin <- j
+      }
+    }
+    if (best_fit == Inf) {
+      stockages[num_stockages + 1] <- jeux[i]
+      num_stockages <- num_stockages + 1
+    } else {
+      stockages[best_bin] <- stockages[best_bin] + jeux[i]
+    }
+  }
+  return(num_stockages)
+}
+
+# Fonction pour appliquer l'algorithme de Branch and Bound
+branch_and_bound <- function(jeux, m) {
+  n <- length(jeux)
+  jeux <- sort(jeux, decreasing = TRUE)
+  best_sol <- n
+  bfd_sol <- bfd(jeux, m)
+  if (bfd_sol < best_sol) {
+    best_sol <- bfd_sol
+  }
+  stack <- list()
+  stack[[1]] <- list(level = 0, items = jeux, bins = numeric(n), num_bins = 0, bound = borne_inf(jeux, m))
+  while (length(stack) > 0) {
+    node <- stack[[length(stack)]]
+    stack <- stack[-length(stack)]
+    if (node$bound >= best_sol) {
+      next
+    }
+    if (node$num_bins + node$bound >= best_sol) {
+      next
+    }
+    if (node$num_bins + node$bound < best_sol) {
+      best_sol <- node$num_bins + node$bound
+    }
+    if (length(node$items) == 0) {
+      next
+    }
+    new_bins <- node$bins
+    new_num_bins <- node$num_bins
+    for (i in 1:length(node$items)) {
+      new_bins[i] <- new_bins[i] + node$items[1]
+      new_num_bins <- new_num_bins + 1
+      if (new_num_bins + borne_inf(node$items[-1], m) >= best_sol) {
+        new_bins[i] <- new_bins[i] - node$items[1]
+        new_num_bins <- new_num_bins - 1
+        break
+      }
+      new_items <- node$items[-1]
+      new_bound <- borne_inf(new_items, m)
+      new_node <- list(level = node$level + 1, items = new_items, bins = new_bins, num_bins = new_num_bins, bound = new_bound)
+      stack <- c(stack, list(new_node))
+      new_bins[i] <- new_bins[i] - node$items[1]
+      new_num_bins <- new_num_bins - 1
+    }
+  }
+  return(best_sol)
+}
+
+
+```
+
+
+```{r}
+jeux <- sample(1:1000, size=1000)
+taille_memoire <- 1000
+result <- branch_and_bound(jeux, taille_memoire)
+print(result)
+
+
+
+resultat_exact <- memoire_exact(jeux, taille_memoire)
+print(resultat_exact)
+```
+
+
+```{r}
+res = c()
+for(i in seq(1, 5000, 500)){
+  jeux <- sample(1:1000, size=i, replace = TRUE)
+  temps = system.time({branch_and_bound(jeux, taille_memoire)})['elapsed']
+  res = c(res, temps)
+}
+```
+
+
+```{r}
+plot(seq(1, 5000, 500), res, main="Temps d'éxécution pour la fonction naive_storage_Rcpp", col = "blue", pch = 19, cex = .6)
+
+```
+
