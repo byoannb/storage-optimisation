@@ -6,30 +6,31 @@ g++ -std=gnu++17  -I"C:/PROGRA~1/R/R-43~1.1/include" -DNDEBUG  -I'C:/Users/hugop
 g++ -std=gnu++17  -I"C:/PROGRA~1/R/R-43~1.1/include" -DNDEBUG  -I'C:/Users/hugop/AppData/Local/R/win-library/4.3/Rcpp/include'   -I"C:/RBuildTools/4.3/x86_64-w64-mingw32.static.posix/include"     -O2 -Wall  -mfpmath=sse -msse2 -mstackrealign  -c ffdBinPacking.cpp -o ffdBinPacking.o
 g++ -std=gnu++17  -I"C:/PROGRA~1/R/R-43~1.1/include" -DNDEBUG  -I'C:/Users/hugop/AppData/Local/R/win-library/4.3/Rcpp/include'   -I"C:/RBuildTools/4.3/x86_64-w64-mingw32.static.posix/include"     -O2 -Wall  -mfpmath=sse -msse2 -mstackrealign  -c storageAlgorithms.cpp -o storageAlgorithms.o
 storageAlgorithms.cpp: In function 'std::vector<std::vector<int> > generate_permutations(std::vector<int>)':
-storageAlgorithms.cpp:14:23: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<int>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
-   14 |     for (int i = 0; i < elements.size(); i++) {
+storageAlgorithms.cpp:17:23: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<int>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+   17 |     for (int i = 0; i < elements.size(); i++) {
       |                     ~~^~~~~~~~~~~~~~~~~
-storageAlgorithms.cpp:18:25: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<int>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
-   18 |       for (int j = 0; j < elements.size(); j++) {
+storageAlgorithms.cpp:21:25: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<int>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+   21 |       for (int j = 0; j < elements.size(); j++) {
       |                       ~~^~~~~~~~~~~~~~~~~
-storageAlgorithms.cpp: In function 'int naive_storage_Rcpp(std::vector<int>, int)':
-storageAlgorithms.cpp:54:25: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<int>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
-   54 |       for (int i = 0; i < memoires.size(); i++) {
-      |                       ~~^~~~~~~~~~~~~~~~~
+storageAlgorithms.cpp: In function 'std::vector<std::vector<int> > naive_storage_Rcpp(std::vector<int>, int)':
+storageAlgorithms.cpp:56:23: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<int>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+   56 |     for (int i = 0; i < permutation.size(); i++) {
+      |                     ~~^~~~~~~~~~~~~~~~~~~~
+storageAlgorithms.cpp:59:25: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<std::vector<int> >::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+   59 |       for (int k = 0; k < bins.size(); k++) {
+      |                       ~~^~~~~~~~~~~~~
 storageAlgorithms.cpp: In function 'int borne_inf(std::vector<int>, int)':
-storageAlgorithms.cpp:76:21: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<int>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
-   76 |   for (int i = 0; i < j.size(); ++i) {
+storageAlgorithms.cpp:91:21: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<int>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+   91 |   for (int i = 0; i < j.size(); ++i) {
       |                   ~~^~~~~~~~~~
-storageAlgorithms.cpp: In function 'int bfd(std::vector<int>, int)':
-storageAlgorithms.cpp:97:12: error: invalid types 'int[int]' for array subscript
-   97 |       if (j[i] <= mem - stockages[j] && stockages[j] < best_fit) {
-      |            ^
-storageAlgorithms.cpp: In function 'int branch_and_bound(std::vector<int>, int)':
-storageAlgorithms.cpp:134:17: warning: comparison of integer expressions of different signedness: '__gnu_cxx::__alloc_traits<std::allocator<int>, int>::value_type' {aka 'int'} and 'std::vector<int>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
-  134 |     if (node[1] == jeux.size()) {
-storageAlgorithms.cpp:137:23: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<int>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
-  137 |     for (int i = 0; i < jeux.size(); ++i) {
-      |                     ~~^~~~~~~~~~~~~
-make: *** [C:/PROGRA~1/R/R-43~1.1/etc/x64/Makeconf:272: storageAlgorithms.o] Error 1
-ERROR: compilation failed for package 'StorageOptimisation'
-* removing 'C:/Users/hugop/Desktop/Hugo/M2DS/algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation'
+g++ -std=gnu++17 -shared -s -static-libgcc -o StorageOptimisation.dll tmp.def RcppExports.o ffdBinPacking.o storageAlgorithms.o -LC:/RBuildTools/4.3/x86_64-w64-mingw32.static.posix/lib/x64 -LC:/RBuildTools/4.3/x86_64-w64-mingw32.static.posix/lib -LC:/PROGRA~1/R/R-43~1.1/bin/x64 -lR
+installing to C:/Users/hugop/Desktop/Hugo/M2DS/algorithmique/storage-optimisation/StorageOptimisation.Rcheck/00LOCK-STORAG~1/00new/StorageOptimisation/libs/x64
+** R
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (StorageOptimisation)

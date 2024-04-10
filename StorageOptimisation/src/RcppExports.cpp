@@ -23,7 +23,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // naive_storage_Rcpp
-int naive_storage_Rcpp(std::vector<int> j, int mem);
+std::vector<std::vector<int>> naive_storage_Rcpp(std::vector<int> j, int mem);
 RcppExport SEXP _StorageOptimisation_naive_storage_Rcpp(SEXP jSEXP, SEXP memSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
