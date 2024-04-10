@@ -1,4 +1,5 @@
 StorageOptimisation-package	StorageOptimisation-package
+branch_and_bound	branch_and_bound
 ffd_bin_packing	ffd_bin_packing
 ffd_bin_packing_Rcpp	ffd_bin_packing_Rcpp
 naive_storage_opti	naive_storage_opti

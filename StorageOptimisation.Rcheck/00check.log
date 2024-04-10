@@ -1,9 +1,9 @@
-* using log directory 'C:/Users/hugop/Desktop/Hugo/M2DS/algorithmique/storage-optimisation/StorageOptimisation.Rcheck'
-* using R version 4.3.1 (2023-06-16 ucrt)
+* using log directory 'D:/Yoann/2. Études/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck'
+* using R version 4.3.2 (2023-10-31 ucrt)
 * using platform: x86_64-w64-mingw32 (64-bit)
 * R was compiled by
-    gcc.exe (GCC) 12.2.0
-    GNU Fortran (GCC) 12.2.0
+    gcc.exe (GCC) 12.3.0
+    GNU Fortran (GCC) 12.3.0
 * running under: Windows 11 x64 (build 22631)
 * using session charset: UTF-8
 * using options '--no-manual --as-cran'
@@ -19,15 +19,13 @@
 * checking for hidden files and directories ... OK
 * checking for portable file names ... OK
 * checking serialization versions ... OK
-* checking whether package 'StorageOptimisation' can be installed ... [14s] OK
+* checking whether package 'StorageOptimisation' can be installed ... [19s] OK
 * used C++ compiler: 'G__~1.EXE (GCC) 12.3.0'
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... OK
-* checking top-level files ... NOTE
-Non-standard file/directory found at top level:
-  'projet_algo.qmd'
+* checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
 * checking package subdirectories ... OK
@@ -50,11 +48,22 @@ Non-standard file/directory found at top level:
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... WARNING
 Objets code non documentés :
-  'bfd' 'borne_inf' 'branch_and_bound' 'solve_bin_packing'
+  'bfd' 'borne_inf' 'solve_bin_packing'
 All user-level objects in a package should have documentation entries.
 See chapter 'Writing R documentation files' in the 'Writing R
 Extensions' manual.
 * checking for code/documentation mismatches ... WARNING
+Erreurs 'codoc' pour la documentation de l'objet 'branch_and_bound' :
+branch_and_bound
+  Code : function(jeux, m)
+  Docs : function(jeux, taille_memoire)
+  Noms d'arguments dans le code mais pas dans la doc :
+    m
+  Noms d'arguments dans la doc mais pas dans le code :
+    taille_memoire
+  Incohérence dans le nom des arguments :
+    Position: 2 Code: m Docs: taille_memoire
+
 Erreurs 'codoc' pour la documentation de l'objet 'ffd_bin_packing_Rcpp' :
 ffd_bin_packing_Rcpp
   Code : function(games, storage)
@@ -73,7 +82,46 @@ ffd_bin_packing_Rcpp
 * checking line endings in C/C++/Fortran sources/headers ... OK
 * checking pragmas in C/C++ headers and code ... OK
 * checking compilation flags used ... OK
-* checking compiled code ... OK
+* checking compiled code ... NOTE
+Avis dans grep("^\tDLL Name:", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll:     file format pei-x86-64' to a wide string
+Avis dans grep("^\tDLL Name:", s0) : input string 2 is invalid
+Avis dans grep("^\tDLL Name:", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll' to a wide string
+Avis dans grep("^\tDLL Name:", s0) : input string 3 is invalid
+Avis dans grep("^The Export Tables", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll:     file format pei-x86-64' to a wide string
+Avis dans grep("^The Export Tables", s0) : input string 2 is invalid
+Avis dans grep("^The Export Tables", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll' to a wide string
+Avis dans grep("^The Export Tables", s0) : input string 3 is invalid
+Avis dans grep("^\tDLL Name:", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll:     file format pei-x86-64' to a wide string
+Avis dans grep("^\tDLL Name:", s0) : input string 2 is invalid
+Avis dans grep("^\tDLL Name:", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll' to a wide string
+Avis dans grep("^\tDLL Name:", s0) : input string 3 is invalid
+Avis dans grep("^The Export Tables", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll:     file format pei-x86-64' to a wide string
+Avis dans grep("^The Export Tables", s0) : input string 2 is invalid
+Avis dans grep("^The Export Tables", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll' to a wide string
+Avis dans grep("^The Export Tables", s0) : input string 3 is invalid
+Avis dans grep("^\tDLL Name:", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll:     file format pei-x86-64' to a wide string
+Avis dans grep("^\tDLL Name:", s0) : input string 2 is invalid
+Avis dans grep("^\tDLL Name:", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll' to a wide string
+Avis dans grep("^\tDLL Name:", s0) : input string 3 is invalid
+Avis dans grep("^The Export Tables", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll:     file format pei-x86-64' to a wide string
+Avis dans grep("^The Export Tables", s0) : input string 2 is invalid
+Avis dans grep("^The Export Tables", s0) :
+  unable to translate 'D:/Yoann/2. <c9>tudes/2. ENSIIE/SEMESTRE 5 (M2DS)/Algorithmique/storage-optimisation/StorageOptimisation.Rcheck/StorageOptimisation/libs/x64/StorageOptimisation.dll' to a wide string
+Avis dans grep("^The Export Tables", s0) : input string 3 is invalid
+
+
+See 'Writing portable packages' in the 'Writing R Extensions' manual.
 * checking examples ... OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK

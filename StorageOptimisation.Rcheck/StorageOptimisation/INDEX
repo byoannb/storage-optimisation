@@ -1,6 +1,7 @@
 StorageOptimisation-package
                         This package provide multiple functions in R
                         and cpp to optimize storage of video games.
+branch_and_bound        Branch and bound algorithm to optimize storage
 ffd_bin_packing         First-fit-decreasing bin packing algorithm
 ffd_bin_packing_Rcpp    First-fit-decreasing bin packing algorithm
 naive_storage_Rcpp      Insertion sort algorithm using C++
