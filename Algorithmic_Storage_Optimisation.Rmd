@@ -11,7 +11,7 @@ rm(list=ls())
 graphics.off()
 ```
 
-```{r}
+```{r echo=FALSE}
 library(Rcpp)
 library(ggplot2)
 library(microbenchmark)
@@ -85,7 +85,7 @@ std::vector<std::vector<int>> ffd_bin_packing_Rcpp(std::vector<int>& games, int 
 
 Nous pouvons tester ces deux algorithmes sur plusieurs simulations, ce qui nous renvoie :
 
-```{r echo=FALSE}
+```{r, echo=FALSE, out.width="50%",}
 games <- sample(1:50, 15, replace = TRUE)
 storage <- 100
 
@@ -136,9 +136,9 @@ Les algorithmes `R` et `C++` fonctionnent sensiblement de la même manière, l'a
 
 **Ainsi, en combinant toutes ces complexités, on obtient une complexité totale pour l'algorithme en $\text{O}(n^2)$.**
 
-## vérification de la complexité sur des exemples
+## Vérification de la complexité sur des exemples
 
-```{r echo = FALSE}
+```{r, echo = FALSE, out.width="50%", fig.align="center"}
 library(ggplot2)
 library(gridExtra)
 
@@ -172,14 +172,14 @@ plot_R <- ggplot(execution_data_R, aes(x = Size, y = ExecutionTime)) +
   geom_line() +
   geom_point() +
   labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
-       title = "Complexité de l'algorithme de bin packing (R)") +
+       title = "Complexité (version R)") +
   theme_minimal()
 
 plot_cpp <- ggplot(execution_data_cpp, aes(x = Size, y = ExecutionTime)) +
   geom_line() +
   geom_point() +
   labs(x = "Taille des données", y = "Temps d'exécution (en microsecondes)", 
-       title = "Complexité de l'algorithme de bin packing (C++)") +
+       title = "Complexité (version C++)") +
   theme_minimal()
 
 grid.arrange(plot_R, plot_cpp, ncol = 2)
@@ -188,7 +188,7 @@ On reconnaît aisément une fonction sensiblement proche de la fonction $n \maps
 
 ## Comparaison des temps d'exécution pour le _First-fit-decreasing bin packing_
 
-```{r echo=FALSE}
+```{r, echo=FALSE}
 source("StorageOptimisation/R/ffd_bin_packing.R")
 sourceCpp("StorageOptimisation/src/ffdBinPacking.cpp")
 
@@ -211,7 +211,7 @@ times_R <- sapply(sizes, function(n) mean(measure_time_R(n)$time))
 times_Cpp <- sapply(sizes, function(n) mean(measure_time_Cpp(n)$time))
 ```
 
-```{r echo=FALSE}
+```{r, echo=FALSE, out.width="50%", fig.align="center"}
 ggplot() +
   geom_point(aes(x = log(sizes), y = log(times_R), 
                  color = "Algorithme R"), 
