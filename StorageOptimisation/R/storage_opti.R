@@ -121,7 +121,7 @@ bfd <- function(jeux, m) {
 #' @param m a vector of games' sizes
 #' @return the minimum number of storages used
 branch_and_bound <- function(jeux, m) {
-  if(sum(jeux>m/2)>length(jeux)){
+  if(sum(jeux>m/2)==length(jeux)){
     return(length(jeux))
   }
   n <- length(jeux)
